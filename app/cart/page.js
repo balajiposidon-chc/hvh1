@@ -1,66 +1,60 @@
-'use client';
-
+"use client";
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useCart } from '../../context/CartContext';
-import { motion } from 'framer-motion';
-import CustomerLayout from '../../components/CustomerLayout';
-
+import Footer from '@/components/Footer';
+import SiteHeader from '@/components/SiteHeader';
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart } = useCart();
-  const total = cart.reduce((sum, item) => sum + item.offerPrice * item.quantity, 0);
-
-  if (!cart.length) {
-    return (
-      <CustomerLayout>
-        <div className="mx-auto mt-24 max-w-4xl px-6 text-center text-charcoal">
-          <h1 className="text-4xl font-semibold">Your cart is empty</h1>
-          <p className="mt-4 text-sm text-charcoal/70">Add premium products to your cart and continue your organic shopping journey.</p>
-          <Link href="/products" className="mt-8 inline-flex rounded-full bg-olive px-6 py-3 text-sm font-semibold text-white transition hover:bg-forest">
-            Browse products
-          </Link>
-        </div>
-      </CustomerLayout>
-    );
-  }
-
-  return (
-    <CustomerLayout>
-      <div className="mx-auto mt-16 max-w-7xl px-6 pb-16 md:px-12">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="glass-card p-8">
-            <h1 className="text-3xl font-semibold text-charcoal">Shopping cart</h1>
-            <div className="mt-8 space-y-6">
-              {cart.map((item) => (
-                <div key={item.id} className="rounded-[2rem] border border-sand bg-white/90 p-6 shadow-sm">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h2 className="text-xl font-semibold text-charcoal">{item.name}</h2>
-                      <p className="mt-2 text-sm text-charcoal/70">{item.quantity} × ₹{item.offerPrice}</p>
+    const [items, setItems] = useState([]);
+    useEffect(() => {
+        const stored = window.localStorage.getItem('hv-cart');
+        if (stored) {
+            setItems(JSON.parse(stored));
+        }
+    }, []);
+    useEffect(() => {
+        window.localStorage.setItem('hv-cart', JSON.stringify(items));
+    }, [items]);
+    const updateQuantity = (id, quantity) => {
+        setItems((current) => current.map((item) => item.id === id ? { ...item, quantity } : item));
+    };
+    const removeItem = (id) => {
+        setItems((current) => current.filter((item) => item.id !== id));
+    };
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return (<div>
+      <SiteHeader />
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-semibold text-slate-900">Shopping cart</h1>
+        {items.length === 0 ? (<div className="mt-10 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+            <p className="text-xl font-medium text-slate-900">Your cart is empty.</p>
+            <Link href="/products" className="mt-4 inline-flex rounded-full bg-brand-600 px-6 py-3 text-white">Browse products</Link>
+          </div>) : (<div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
+            <div className="space-y-4">
+              {items.map((item) => (<div key={item.id} className="flex flex-wrap items-center gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <img src={item.image} alt={item.name} className="h-24 w-24 rounded-3xl object-cover"/>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-semibold text-slate-900">{item.name}</h2>
+                    <p className="mt-2 text-sm text-slate-600">${item.price.toFixed(2)} each</p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <label className="text-sm text-slate-600">Qty</label>
+                      <input type="number" min="1" value={item.quantity} onChange={(e) => updateQuantity(item.id, Number(e.target.value))} className="w-20 rounded-xl border border-slate-200 px-3 py-2 text-sm"/>
                     </div>
-                    <button className="rounded-full border border-sand px-4 py-2 text-sm text-charcoal transition hover:border-olive" onClick={() => removeFromCart(item.id)}>
-                      Remove
-                    </button>
                   </div>
-                </div>
-              ))}
+                  <button className="text-sm font-semibold text-rose-600 hover:text-rose-700" onClick={() => removeItem(item.id)}>Remove</button>
+                </div>))}
             </div>
-          </div>
-          <div className="glass-card p-8">
-            <h2 className="text-xl font-semibold text-charcoal">Order summary</h2>
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between text-sm text-charcoal/70"><span>Subtotal</span><span>₹{total}</span></div>
-              <div className="flex items-center justify-between text-sm text-charcoal/70"><span>Estimated tax</span><span>₹{Math.round(total * 0.05)}</span></div>
-              <div className="flex items-center justify-between text-lg font-semibold text-charcoal"><span>Total</span><span>₹{Math.round(total * 1.05)}</span></div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-900">Summary</h2>
+              <div className="mt-4 space-y-3 text-sm text-slate-700">
+                <p>Items: {items.length}</p>
+                <p>Subtotal: ${subtotal.toFixed(2)}</p>
+                <p>Estimated shipping: $10.00</p>
+                <p>Total: ${(subtotal + 10).toFixed(2)}</p>
+              </div>
+              <Link href="/checkout" className="mt-6 inline-flex w-full justify-center rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white hover:bg-brand-700">Proceed to checkout</Link>
             </div>
-            <div className="mt-8 space-y-3">
-              <Link href="/checkout" className="block rounded-full bg-forest px-6 py-4 text-center text-sm font-semibold text-white transition hover:bg-olive">Proceed to checkout</Link>
-              <button className="w-full rounded-full border border-sand px-6 py-4 text-sm font-semibold text-charcoal transition hover:border-olive" onClick={clearCart}>
-                Clear cart
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </CustomerLayout>
-  );
+          </div>)}
+      </main>
+      <Footer />
+    </div>);
 }

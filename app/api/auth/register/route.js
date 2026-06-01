@@ -1,32 +1,31 @@
-export const dynamic = 'force-dynamic';
-
 import { NextResponse } from 'next/server';
-import connect from '../../../../services/db';
-import User from '../../../../models/User';
-import bcrypt from 'bcrypt';
-import validators from '../../../../utils/validators';
-const { validateEmail, validatePassword, sanitizeString } = validators;
-
+import bcryptjs from 'bcryptjs';
+import connectToDatabase from '@/lib/mongodb';
+import User from '@/lib/models/User';
+import { registerSchema } from '@/lib/validators';
 export async function POST(request) {
-  await connect();
-  const body = await request.json();
-  const email = sanitizeString(body.email || '').toLowerCase();
-  const password = body.password;
-  const firstName = sanitizeString(body.firstName || '');
-  const lastName = sanitizeString(body.lastName || '');
-
-  if (!validateEmail(email) || !validatePassword(password)) {
-    return NextResponse.json({ message: 'A valid email and password are required.' }, { status: 400 });
-  }
-
-  const existing = await User.findOne({ email });
-  if (existing) {
-    return NextResponse.json({ message: 'Email is already registered.' }, { status: 409 });
-  }
-
-  const hashed = await bcrypt.hash(password, 10);
-  const user = new User({ email, password: hashed, firstName, lastName, role: 'Customer' });
-  await user.save();
-
-  return NextResponse.json({ success: true, message: 'Account created successfully.' });
+    try {
+        const body = await request.json();
+        const parsed = registerSchema.parse(body);
+        await connectToDatabase();
+        const existing = await User.findOne({ email: parsed.email.toLowerCase() });
+        if (existing) {
+            return NextResponse.json({ message: 'Email is already registered' }, { status: 400 });
+        }
+        const hashed = await bcryptjs.hash(parsed.password, 10);
+        const user = new User({
+            name: parsed.name,
+            email: parsed.email.toLowerCase(),
+            password: hashed,
+            phone: parsed.phone || '',
+            address: parsed.address || '',
+            role: 'customer',
+            status: 'active',
+        });
+        await user.save();
+        return NextResponse.json({ message: 'User created' }, { status: 201 });
+    }
+    catch (error) {
+        return NextResponse.json({ message: error?.message ?? 'Registration failed' }, { status: 400 });
+    }
 }

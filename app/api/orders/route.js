@@ -1,73 +1,41 @@
-export const dynamic = 'force-dynamic';
-
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Order from '@/models/Order';
-import { verifyJwtToken } from '@/utils/auth';
-
-export async function POST(req) {
-  try {
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
-    
-    const decoded = await verifyJwtToken(token);
-    if (!decoded) return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
-
-    await dbConnect();
-    const {
-      orderItems,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice
-    } = await req.json();
-
-    if (orderItems && orderItems.length === 0) {
-      return NextResponse.json({ message: 'No order items' }, { status: 400 });
-    } else {
-      const order = new Order({
-        orderItems,
-        user: decoded.id,
-        shippingAddress,
-        paymentMethod,
-        itemsPrice,
-        taxPrice,
-        shippingPrice,
-        totalPrice
-      });
-
-      const createdOrder = await order.save();
-      return NextResponse.json({ success: true, order: createdOrder }, { status: 201 });
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import connectToDatabase from '@/lib/mongodb';
+import Order from '@/lib/models/Order';
+import Product from '@/lib/models/Product';
+export async function POST(request) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-  } catch (error) {
-    console.error('Create order error:', error);
-    return NextResponse.json({ message: 'Server Error', error: error.message }, { status: 500 });
-  }
-}
-
-export async function GET(req) {
-  try {
-    const token = req.cookies.get('token')?.value;
-    if (!token) return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
-    
-    const decoded = await verifyJwtToken(token);
-    if (!decoded) return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
-
-    await dbConnect();
-
-    // If admin, fetch all, else fetch only user's
-    let orders;
-    if (['Super Admin', 'Admin', 'Accountant', 'Store Manager'].includes(decoded.role)) {
-      orders = await Order.find({}).populate('user', 'id name').populate('store', 'name');
-    } else {
-      orders = await Order.find({ user: decoded.id });
+    const body = await request.json();
+    const { address, phone, items, subtotal, tax, shippingFee, total } = body;
+    if (!address || !phone || !Array.isArray(items) || items.length === 0) {
+        return NextResponse.json({ message: 'Invalid order information' }, { status: 400 });
     }
-
-    return NextResponse.json({ success: true, count: orders.length, orders });
-  } catch (error) {
-    console.error('Fetch orders error:', error);
-    return NextResponse.json({ message: 'Server Error' }, { status: 500 });
-  }
+    await connectToDatabase();
+    const orderItems = items.map((item) => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+    }));
+    const order = new Order({
+        user: session.user.id,
+        items: orderItems,
+        shippingAddress: address,
+        phone,
+        paymentMethod: 'card',
+        subtotal,
+        tax,
+        shippingFee,
+        total,
+    });
+    await order.save();
+    for (const item of orderItems) {
+        await Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } });
+    }
+    return NextResponse.json({ message: 'Order created', orderId: order._id.toString() }, { status: 201 });
 }
