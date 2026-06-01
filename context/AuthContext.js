@@ -1,66 +1,79 @@
 "use client";
 
 import { createContext, useState, useEffect, useContext } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    checkUserLoggedIn();
-  }, []);
-
-  const checkUserLoggedIn = async () => {
-    try {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error("Auth check failed", err);
+    if (status === "authenticated" && session?.user) {
+      setUser({
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+        status: session.user.status,
+      });
+    } else if (status === "unauthenticated") {
       setUser(null);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [session, status]);
 
-  const login = async (email, password) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+  const login = async ({ email, password }) => {
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
     });
     
-    const data = await res.json();
-    
-    if (res.ok) {
-      setUser(data.user);
-      if (data.user.role === 'Customer') {
-        router.push('/');
-      } else {
-        router.push(`/${data.user.role.toLowerCase().replace(' ', '')}-dashboard`);
-      }
-      return { success: true };
-    } else {
-      return { success: false, message: data.message };
+    if (result?.error) {
+      return { success: false, message: result.error };
     }
+    
+    try {
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      if (sessionData?.user) {
+        const u = sessionData.user;
+        setUser(u);
+        
+        // Redirect based on role
+        if (u.role === 'Customer') {
+          router.push('/');
+        } else if (u.role === 'Super Admin') {
+          router.push('/superadmin-dashboard');
+        } else if (u.role === 'Admin' || u.role === 'Store Manager') {
+          router.push('/admin');
+        } else if (u.role === 'Accountant') {
+          router.push('/superadmin-dashboard/accounting');
+        } else {
+          router.push('/');
+        }
+        return { success: true };
+      }
+    } catch (e) {
+      console.error("Session fetch failed on login", e);
+    }
+    
+    return { success: true };
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await signOut({ redirect: false });
     setUser(null);
     router.push("/login");
   };
 
+  const loading = status === "loading";
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, checkUserLoggedIn }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, checkUserLoggedIn: () => {} }}>
       {children}
     </AuthContext.Provider>
   );

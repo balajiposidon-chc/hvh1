@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 export default async function AdminProductsNewPage() {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.role || !['admin', 'manager'].includes(session.user.role)) {
+    const role = session?.user?.role?.toLowerCase();
+    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
         return <div className="p-12 text-center">Access denied</div>;
     }
     return (<AdminShell>

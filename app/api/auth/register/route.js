@@ -19,7 +19,7 @@ export async function POST(request) {
             password: hashed,
             phone: parsed.phone || '',
             address: parsed.address || '',
-            role: 'customer',
+            role: 'Customer',
             status: 'active',
         });
         await user.save();

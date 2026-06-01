@@ -5,7 +5,8 @@ import connectToDatabase from '@/lib/mongodb';
 import User from '@/lib/models/User';
 export async function PUT(request, { params }) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.role || !['admin', 'manager'].includes(session.user.role)) {
+    const role = session?.user?.role?.toLowerCase();
+    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
     }
     const body = await request.json();
@@ -23,7 +24,8 @@ export async function PUT(request, { params }) {
 }
 export async function DELETE(request, { params }) {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.role || !['admin', 'manager'].includes(session.user.role)) {
+    const role = session?.user?.role?.toLowerCase();
+    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
     }
     await connectToDatabase();

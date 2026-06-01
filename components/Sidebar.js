@@ -11,15 +11,31 @@ export default function Sidebar() {
 
   if (!user) return null;
 
-  const rolePrefix = `/${user.role.toLowerCase().replace(' ', '')}`;
+  let navItems = [];
 
-  const navItems = [
-    { name: 'Dashboard', path: `${rolePrefix}-dashboard`, icon: LayoutDashboard },
-    { name: 'Products', path: `${rolePrefix}-products`, icon: Package, roles: ['Super Admin', 'Admin', 'Store Manager'] },
-    { name: 'Orders', path: `${rolePrefix}-orders`, icon: ShoppingCart, roles: ['Super Admin', 'Admin', 'Store Manager'] },
-    { name: 'Stores', path: `${rolePrefix}-stores`, icon: Store, roles: ['Super Admin'] },
-    { name: 'Invoices', path: `${rolePrefix}-invoices`, icon: Receipt, roles: ['Super Admin', 'Accountant'] },
-  ];
+  if (user.role === 'Super Admin') {
+    navItems = [
+      { name: 'Dashboard', path: '/superadmin-dashboard', icon: LayoutDashboard },
+      { name: 'Products', path: '/superadmin-dashboard/products', icon: Package },
+      { name: 'Orders', path: '/superadmin-dashboard/orders', icon: ShoppingCart },
+      { name: 'Stores', path: '/superadmin-dashboard/stores', icon: Store },
+      { name: 'Accounting', path: '/superadmin-dashboard/accounting', icon: Receipt },
+    ];
+  } else if (user.role === 'Admin' || user.role === 'Store Manager') {
+    navItems = [
+      { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+      { name: 'Products', path: '/admin/products', icon: Package },
+      { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+      { name: 'Settings', path: '/admin/settings', icon: Store },
+    ];
+    if (user.role === 'Admin') {
+      navItems.push({ name: 'Users', path: '/admin/users', icon: User });
+    }
+  } else if (user.role === 'Accountant') {
+    navItems = [
+      { name: 'Accounting', path: '/superadmin-dashboard/accounting', icon: Receipt },
+    ];
+  }
 
   return (
     <div className="w-64 bg-neutral-900 text-white flex flex-col min-h-screen sticky top-0 shadow-xl z-10">
@@ -31,9 +47,8 @@ export default function Sidebar() {
       <div className="flex-1 px-4 py-6 overflow-y-auto">
         <ul className="space-y-2">
           {navItems.map((item) => {
-            if (item.roles && !item.roles.includes(user.role)) return null;
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.path);
+            const isActive = pathname === item.path || (item.path !== '/admin' && item.path !== '/superadmin-dashboard' && pathname.startsWith(item.path));
             
             return (
               <li key={item.name}>
