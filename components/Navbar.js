@@ -28,8 +28,9 @@ export default function Navbar() {
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'glass py-3 shadow-sm' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary flex items-center gap-2">
-            <span className="text-3xl text-primary">Hill & Valley</span>
+          <Link href="/" className="text-2xl font-bold text-cherry flex items-center gap-2 text-decoration-none">
+            <img src="/logo.jpg" alt="Hill & Valley" className="rounded-full object-cover" style={{ height: '40px', width: '40px' }} />
+            <span className="text-3xl text-cherry" style={{ fontFamily: "'Playfair Display', serif" }}>Hill & Valley</span>
           </Link>
 
           {/* Desktop Nav */}

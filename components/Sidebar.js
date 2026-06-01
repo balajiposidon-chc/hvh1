@@ -40,7 +40,10 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-neutral-900 text-white flex flex-col min-h-screen sticky top-0 shadow-xl z-10">
       <div className="p-6 text-center border-b border-neutral-800">
-        <h4 className="text-2xl font-bold text-accent m-0">Hill & Valley</h4>
+        <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+          <img src="/logo.jpg" alt="Hill & Valley" className="rounded-full object-cover" style={{ height: '35px', width: '35px' }} />
+          <h4 className="text-2xl font-bold text-accent m-0" style={{ fontFamily: "'Playfair Display', serif" }}>Hill & Valley</h4>
+        </div>
         <span className="text-neutral-400 text-sm mt-2 block px-3 py-1 bg-neutral-800 rounded-full inline-block">{user.role} Panel</span>
       </div>
       
