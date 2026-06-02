@@ -43,3 +43,21 @@ export async function PUT(request, { params }) {
     }
     return NextResponse.json({ message: 'Updated product' });
 }
+
+export async function DELETE(request, { params }) {
+    const session = await getServerSession(authOptions);
+    const role = session?.user?.role?.toLowerCase();
+    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+    }
+    await connectToDatabase();
+    try {
+        const product = await Product.findByIdAndDelete(params.id);
+        if (!product) {
+            return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+        }
+        return NextResponse.json({ message: 'Product deleted' });
+    } catch (err) {
+        return NextResponse.json({ message: err.message }, { status: 500 });
+    }
+}

@@ -35,6 +35,22 @@ export default function ProductsManagement() {
     }
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setProducts(prev => prev.filter(p => p._id !== id));
+      } else {
+        alert(data.message || 'Failed to delete product');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server');
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -44,7 +60,10 @@ export default function ProductsManagement() {
           <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Products Management</h2>
           <p className="text-neutral-500 font-medium">Manage your catalog, inventory, and pricing</p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all w-full md:w-auto">
+        <button 
+          onClick={() => router.push('/superadmin-dashboard/products/new')}
+          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all w-full md:w-auto"
+        >
           <Plus className="w-5 h-5" /> Add New Product
         </button>
       </div>
@@ -100,7 +119,7 @@ export default function ProductsManagement() {
                         <div>
                           <p className="font-bold text-neutral-900 mb-0">{product.name}</p>
                           <div className="flex items-center gap-1 text-xs text-neutral-500 mt-1">
-                            <Tag className="w-3 h-3" /> {product.category?.name || 'Uncategorized'}
+                            <Tag className="w-3 h-3" /> {product.category?.name || product.categoryName || 'Uncategorized'}
                           </div>
                         </div>
                       </div>
@@ -130,13 +149,25 @@ export default function ProductsManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" title="View">
+                      <button 
+                        onClick={() => router.push(`/products/${product.slug}`)}
+                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
+                        title="View"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1" title="Edit">
+                      <button 
+                        onClick={() => router.push(`/superadmin-dashboard/products/${product._id}/edit`)}
+                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1" 
+                        title="Edit"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" title="Delete">
+                      <button 
+                        onClick={() => handleDeleteProduct(product._id)}
+                        className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" 
+                        title="Delete"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>

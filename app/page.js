@@ -4,6 +4,7 @@ import SiteHeader from '@/components/SiteHeader';
 import ProductCard from '@/components/ProductCard';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
+import Setting from '@/lib/models/Setting';
 import { ShieldCheck, Leaf, Truck, ArrowRight, Globe } from 'lucide-react';
 
 export default async function HomePage() {
@@ -15,6 +16,8 @@ export default async function HomePage() {
         category: p.category ? p.category.toString() : '',
     }));
 
+    const setting = await Setting.findOne().lean() || {};
+
     return (
       <div className="bg-gold-light min-vh-100 flex-column d-flex">
         <SiteHeader />
@@ -24,23 +27,22 @@ export default async function HomePage() {
           {/* Blurred Glow Spheres */}
           <div className="position-absolute bg-cherry opacity-10 rounded-circle float-slow" style={{ width: '400px', height: '400px', top: '-10%', right: '-5%', filter: 'blur(120px)', zIndex: 0 }}></div>
           <div className="position-absolute bg-warning opacity-10 rounded-circle float-slow" style={{ width: '350px', height: '350px', bottom: '10%', left: '-5%', filter: 'blur(100px)', zIndex: 0, animationDelay: '-3s' }}></div>
-
+ 
           <div className="container px-4 px-md-5 position-relative z-1">
             <div className="row align-items-center g-5">
               <div className="col-lg-6 col-12 text-center text-lg-start animate__animated animate__fadeInLeft">
                 <span className="text-uppercase tracking-wider fw-bold text-cherry fs-6 mb-3 d-inline-block px-3 py-1.5 rounded-pill" style={{ background: 'var(--cherry-light)', fontSize: '0.8rem', letterSpacing: '1.5px' }}>
                  Pure, Ethical & Authentic Spices
                 </span>
-                <h1 className="display-3 fw-bold text-light mb-4" style={{ fontFamily: "'Playfair Display', serif", lineHeight: 1.15 }}>
-                  Sourced from Nature, <br />
-                  <span className="text-cherry">Perfected by <i>Tradition</i></span>
+                <h1 className="display-3 fw-bold hero-title mb-4" style={{ fontFamily: "'Playfair Display', serif", lineHeight: 1.15 }}>
+                  {setting.heroTitle || 'Sourced from Nature, Perfected by Tradition'}
                 </h1>
-                <p className="lead text-light mb-5" style={{ fontSize: '1.15rem', lineHeight: '1.8' }}>
-                  Discover Hill & Valley's premium collection of hand-picked regional spices, organic cold-pressed oils, and wellness blends. Ethically sourced directly from local estate farmers to preserve original rich aromas.
+                <p className="lead hero-subtitle mb-5" style={{ fontSize: '1.15rem', lineHeight: '1.8' }}>
+                  {setting.heroSubtitle || "Discover Hill & Valley's premium collection of hand-picked regional spices, organic cold-pressed oils, and wellness blends. Ethically sourced directly from local estate farmers to preserve original rich aromas."}
                 </p>
                 <div className="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
-                  <Link href="/products" className="btn btn-outline-cherry btn-lg px-4 py-3">
-                    Explore Collection 
+                  <Link href={setting.heroBtnLink || "/products"} className="btn btn-outline-cherry btn-lg px-4 py-3">
+                    {setting.heroBtnText || "Explore Collection"}
                   </Link>
                   <Link href="/admin" className="btn btn-outline-cherry btn-lg px-4 py-3">
                     Partner Workspace
@@ -52,7 +54,7 @@ export default async function HomePage() {
                   {/* Decorative golden ring */}
                   <div className="position-absolute border border-warning rounded-5" style={{ width: '100%', height: '100%', top: '15px', left: '15px', zIndex: 0, borderStyle: 'dashed !important', opacity: 0.3, borderColor: 'var(--gold-accent)' }}></div>
                   <img 
-                    src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                    src={setting.heroImage || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"} 
                     alt="Spices Banner" 
                     className="img-fluid rounded-5 shadow-lg position-relative z-1"
                     style={{ transform: 'rotate(-1.5deg)', maxHeight: '490px', width: '100%', maxWidth: '540px', objectFit: 'cover' }}

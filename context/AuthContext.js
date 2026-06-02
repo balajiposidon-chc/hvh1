@@ -9,7 +9,41 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
+  const [permissions, setPermissions] = useState([]);
   const router = useRouter();
+
+  const getDefaultPermissions = (roleName) => {
+    const r = roleName ? roleName.toLowerCase() : '';
+    if (r === 'super admin' || r === 'superadmin') {
+      return ['dashboard', 'products', 'orders', 'stores', 'accounting', 'users', 'settings', 'rbac'];
+    } else if (r === 'admin') {
+      return ['dashboard', 'products', 'orders', 'users', 'settings'];
+    } else if (r === 'store manager' || r === 'manager') {
+      return ['dashboard', 'products', 'orders'];
+    } else if (r === 'accountant') {
+      return ['accounting'];
+    }
+    return [];
+  };
+
+  const fetchPermissions = async (roleName) => {
+    if (!roleName) {
+      setPermissions([]);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/auth/permissions?role=${encodeURIComponent(roleName)}`);
+      const data = await res.json();
+      if (data.success) {
+        setPermissions(data.permissions);
+      } else {
+        setPermissions(getDefaultPermissions(roleName));
+      }
+    } catch (err) {
+      console.error("Failed to fetch permissions:", err);
+      setPermissions(getDefaultPermissions(roleName));
+    }
+  };
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -20,8 +54,10 @@ export function AuthProvider({ children }) {
         role: session.user.role,
         status: session.user.status,
       });
+      fetchPermissions(session.user.role);
     } else if (status === "unauthenticated") {
       setUser(null);
+      setPermissions([]);
     }
   }, [session, status]);
 
@@ -42,6 +78,7 @@ export function AuthProvider({ children }) {
       if (sessionData?.user) {
         const u = sessionData.user;
         setUser(u);
+        await fetchPermissions(u.role);
         
         // Redirect based on role
         if (u.role === 'Customer') {
@@ -67,13 +104,14 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     await signOut({ redirect: false });
     setUser(null);
+    setPermissions([]);
     router.push("/login");
   };
 
   const loading = status === "loading";
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, checkUserLoggedIn: () => {} }}>
+    <AuthContext.Provider value={{ user, permissions, login, logout, loading, checkUserLoggedIn: () => {} }}>
       {children}
     </AuthContext.Provider>
   );

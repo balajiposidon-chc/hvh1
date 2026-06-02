@@ -7,35 +7,24 @@ import { LayoutDashboard, Package, ShoppingCart, Store, Receipt, LogOut, Home, U
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, permissions = [] } = useAuth();
 
   if (!user) return null;
 
-  let navItems = [];
+  // Map all possible navItems to their corresponding permission requirement
+  const allNavItems = [
+    { name: 'Dashboard', path: user.role === 'Super Admin' ? '/superadmin-dashboard' : '/admin', icon: LayoutDashboard, permission: 'dashboard' },
+    { name: 'Products', path: user.role === 'Super Admin' ? '/superadmin-dashboard/products' : '/admin/products', icon: Package, permission: 'products' },
+    { name: 'Orders', path: user.role === 'Super Admin' ? '/superadmin-dashboard/orders' : '/admin/orders', icon: ShoppingCart, permission: 'orders' },
+    { name: 'Stores', path: '/superadmin-dashboard/stores', icon: Store, permission: 'stores' },
+    { name: 'Accounting', path: '/superadmin-dashboard/accounting', icon: Receipt, permission: 'accounting' },
+    { name: 'Users', path: user.role === 'Super Admin' ? '/superadmin-dashboard/users' : '/admin/users', icon: User, permission: 'users' },
+    { name: 'Role Manager', path: '/superadmin-dashboard/roles', icon: User, permission: 'rbac' },
+    { name: 'Settings', path: user.role === 'Super Admin' ? '/superadmin-dashboard/settings' : '/admin/settings', icon: Store, permission: 'settings' },
+  ];
 
-  if (user.role === 'Super Admin') {
-    navItems = [
-      { name: 'Dashboard', path: '/superadmin-dashboard', icon: LayoutDashboard },
-      { name: 'Products', path: '/superadmin-dashboard/products', icon: Package },
-      { name: 'Orders', path: '/superadmin-dashboard/orders', icon: ShoppingCart },
-      { name: 'Stores', path: '/superadmin-dashboard/stores', icon: Store },
-      { name: 'Accounting', path: '/superadmin-dashboard/accounting', icon: Receipt },
-    ];
-  } else if (user.role === 'Admin' || user.role === 'Store Manager') {
-    navItems = [
-      { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-      { name: 'Products', path: '/admin/products', icon: Package },
-      { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-      { name: 'Settings', path: '/admin/settings', icon: Store },
-    ];
-    if (user.role === 'Admin') {
-      navItems.push({ name: 'Users', path: '/admin/users', icon: User });
-    }
-  } else if (user.role === 'Accountant') {
-    navItems = [
-      { name: 'Accounting', path: '/superadmin-dashboard/accounting', icon: Receipt },
-    ];
-  }
+  // Filter based on active user permissions
+  const navItems = allNavItems.filter(item => permissions.includes(item.permission));
 
   return (
     <div className="w-64 bg-neutral-900 text-white flex flex-col min-h-screen sticky top-0 shadow-xl z-10">
@@ -57,7 +46,7 @@ export default function Sidebar() {
               <li key={item.name}>
                 <Link 
                   href={item.path} 
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                  className={`text-decoration-none flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-primary text-white shadow-lg shadow-primary/20' 
                       : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
@@ -71,7 +60,7 @@ export default function Sidebar() {
           })}
         </ul>
       </div>
-
+ 
       <div className="p-4 border-t border-neutral-800">
         <div className="bg-neutral-800 rounded-xl p-4 mb-4">
           <div className="flex items-center gap-3 mb-4">
@@ -83,7 +72,7 @@ export default function Sidebar() {
               <p className="text-xs text-neutral-400">{user.email}</p>
             </div>
           </div>
-          <Link href="/" className="flex items-center gap-2 text-sm text-neutral-300 hover:text-accent transition-colors py-2 border-t border-neutral-700/50">
+          <Link href="/" className="text-decoration-none flex items-center gap-2 text-sm text-neutral-300 hover:text-accent transition-colors py-2 border-t border-neutral-700/50">
             <Home className="w-4 h-4" /> Go to Storefront
           </Link>
           <button 

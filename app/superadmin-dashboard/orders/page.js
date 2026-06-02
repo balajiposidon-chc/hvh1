@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Eye, Download, FileText } from 'lucide-react';
+import { Search, Filter, Eye, Download, FileText, Edit, Trash2 } from 'lucide-react';
 
 export default function OrdersManagement() {
   const { user } = useAuth();
@@ -37,6 +37,22 @@ export default function OrdersManagement() {
   const handleDownloadInvoice = (orderId) => {
     // Generate PDF logic would go here
     alert(`Downloading invoice for order ${orderId}`);
+  };
+
+  const handleDeleteOrder = async (id) => {
+    if (!confirm('Are you sure you want to delete this order?')) return;
+    try {
+      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o._id !== id));
+      } else {
+        alert(data.message || 'Failed to delete order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server');
+    }
   };
 
   if (!user) return null;
@@ -107,7 +123,7 @@ export default function OrdersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="font-bold text-neutral-900">{order.user?.name || 'Guest'}</span>
-                        <span className="text-xs text-neutral-500">{order.shippingAddress?.city}</span>
+                        <span className="text-xs text-neutral-500">{order.shippingAddress?.city || 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">
@@ -124,18 +140,29 @@ export default function OrdersManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-neutral-900">
-                      ₹{order.totalPrice}
+                      ₹{order.totalPrice || order.total || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" title="View Details">
-                        <Eye className="w-4 h-4" />
+                      <button 
+                        onClick={() => router.push(`/superadmin-dashboard/orders/${order._id}/edit`)}
+                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1" 
+                        title="Edit Order"
+                      >
+                        <Edit className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDownloadInvoice(order._id)}
-                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50" 
+                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
                         title="Download Invoice"
                       >
                         <FileText className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteOrder(order._id)}
+                        className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" 
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
