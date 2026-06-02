@@ -1,53 +1,302 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import Footer from '@/components/Footer';
+import { Star, ShoppingBag, ArrowLeft, ShieldCheck, Leaf, Truck, Check, ChevronRight } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 import SiteHeader from '@/components/SiteHeader';
-import connectToDatabase from '@/lib/mongodb';
-import Product from '@/lib/models/Product';
-export default async function ProductDetailsPage({ params }) {
-    await connectToDatabase();
-    const product = await Product.findOne({ slug: params.slug, status: 'active' }).lean();
-    if (!product) {
-        return (<div>
+import Footer from '@/components/Footer';
+
+export default function ProductDetailPage() {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const { addToCart } = useCart();
+  const router = useRouter();
+  const params = useParams();
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const response = await fetch(`/api/products/${params.slug}`);
+        const data = await response.json();
+        if (response.ok && data.product) {
+          setProduct(data.product);
+        } else {
+          router.push('/products');
+        }
+      } catch (err) {
+        console.error("Error loading product", err);
+        router.push('/products');
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (params.slug) load();
+  }, [params.slug, router]);
+
+  if (loading) {
+    return (
+      <div className="bg-gold-light min-vh-100 flex-column d-flex">
         <SiteHeader />
-        <main className="mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-semibold">Product not found</h1>
-          <p className="mt-4 text-slate-600">Check the catalog or search for a different product.</p>
-          <Link href="/products" className="mt-6 inline-block rounded-full bg-brand-600 px-6 py-3 text-white">Back to products</Link>
+        <main className="container py-5 text-center flex-grow-1 d-flex align-items-center justify-content-center">
+          <div className="text-center py-5">
+            <div className="spinner-border text-danger mb-3" role="status"></div>
+            <p className="text-muted">Loading premium product details...</p>
+          </div>
         </main>
         <Footer />
-      </div>);
+      </div>
+    );
+  }
+
+  if (!product) return null;
+
+  const displayPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
+  const originalPrice = product.discountPrice > 0 ? product.price : null;
+  const savings = originalPrice ? originalPrice - displayPrice : 0;
+  const savingsPct = originalPrice ? Math.round((savings / originalPrice) * 100) : 0;
+
+  const handleAddToCart = () => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product);
     }
-    return (<div>
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2500);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product);
+    router.push('/checkout');
+  };
+
+  return (
+    <div className="bg-gold-light min-vh-100 flex-column d-flex">
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl bg-white p-8 shadow-sm">
-            <div className="mb-6 overflow-hidden rounded-3xl bg-slate-100">
-              <img src={product.images?.[0] ?? '/placeholder.png'} alt={product.name} className="h-96 w-full object-cover"/>
-            </div>
-            <div>
-              <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-700">{product.category}</span>
-              <h1 className="mt-4 text-3xl font-semibold text-slate-900">{product.name}</h1>
-              <p className="mt-4 text-slate-600">{product.description}</p>
-              <div className="mt-6 flex items-center gap-4 text-3xl font-semibold text-slate-900">
-                <span>${product.discountPrice > 0 ? product.discountPrice.toFixed(2) : product.price.toFixed(2)}</span>
-                {product.discountPrice > 0 && <span className="text-sm text-slate-500 line-through">${product.price.toFixed(2)}</span>}
+
+      <main className="container px-4 px-lg-5 py-5 flex-grow-1">
+        {/* Breadcrumb Navigation */}
+        <nav className="mb-4 d-flex align-items-center gap-2 small text-muted animate__animated animate__fadeIn">
+          <Link href="/" className="text-decoration-none text-muted hover-text-cherry">Home</Link>
+          <ChevronRight size={12} />
+          <Link href="/products" className="text-decoration-none text-muted hover-text-cherry">Shop</Link>
+          <ChevronRight size={12} />
+          <span className="text-dark fw-medium">{product.name}</span>
+        </nav>
+
+        {/* Back Link */}
+        <Link href="/products" className="text-decoration-none text-cherry fw-semibold mb-4 d-inline-flex align-items-center gap-2 small animate__animated animate__fadeIn">
+          <ArrowLeft size={16} /> Back to Catalog
+        </Link>
+
+        {/* Detail Grid */}
+        <div className="row g-5 mt-1">
+          {/* Left Column: Image & Badges */}
+          <div className="col-lg-6 animate__animated animate__fadeInLeft">
+            <div className="bg-white p-3 rounded-4 shadow-sm border border-light overflow-hidden">
+              <div className="position-relative rounded-3 overflow-hidden bg-light" style={{ height: '450px' }}>
+                <img 
+                  src={product.images?.[0] ?? '/placeholder.png'} 
+                  alt={product.name} 
+                  className="w-100 h-100" 
+                  style={{ objectFit: 'cover' }}
+                />
+                {originalPrice && (
+                  <span className="position-absolute top-0 start-0 m-3 badge bg-danger text-white rounded-pill px-3 py-2 fw-bold" style={{ fontSize: '0.8rem', background: 'linear-gradient(135deg, #D2143A 0%, #8B0000 100%) !important' }}>
+                    Save {savingsPct}%
+                  </span>
+                )}
+              </div>
+
+              {/* Quality Badges */}
+              <div className="row g-3 mt-3 text-center">
+                <div className="col-4">
+                  <div className="p-3 bg-gold-light rounded-3 border border-light">
+                    <Leaf size={20} className="text-success mb-2" />
+                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>100% Organic</p>
+                  </div>
+                </div>
+                <div className="col-4">
+                  <div className="p-3 bg-gold-light rounded-3 border border-light">
+                    <ShieldCheck size={20} className="text-cherry mb-2" />
+                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>Lab Certified</p>
+                  </div>
+                </div>
+                <div className="col-4">
+                  <div className="p-3 bg-gold-light rounded-3 border border-light">
+                    <Truck size={20} className="text-warning mb-2" />
+                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>Secure Packing</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Details</p>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
-                <p>Brand: {product.brand}</p>
-                <p>Stock: {product.stock}</p>
-                <p>Status: {product.status}</p>
+
+          {/* Right Column: Information & Form */}
+          <div className="col-lg-6 animate__animated animate__fadeInRight">
+            <div className="bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light h-100 d-flex flex-column justify-content-between">
+              <div>
+                <span className="text-uppercase text-muted fw-bold d-block mb-2" style={{ letterSpacing: '2px', fontSize: '0.75rem' }}>
+                  {product.categoryName || 'Organic Product'}
+                </span>
+                
+                <h1 className="fw-bold text-dark mb-3 display-5" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  {product.name}
+                </h1>
+
+                {/* Rating & Brand */}
+                <div className="d-flex flex-wrap align-items-center gap-3 mb-4">
+                  <div className="d-flex align-items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill={i < 4 ? '#C5A880' : 'none'} stroke={i < 4 ? '#C5A880' : '#CCCCCC'} />
+                    ))}
+                    <span className="text-muted small ms-1">(4.8 rating)</span>
+                  </div>
+                  <span className="text-muted">|</span>
+                  <span className="text-muted small">Brand: <strong className="text-dark">{product.brand || 'Hill & Valley'}</strong></span>
+                </div>
+
+                <hr className="my-4 border-light" />
+
+                {/* Price Panel */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-end gap-3">
+                    <span className="display-5 fw-bold text-cherry" style={{ lineHeight: 1 }}>₹{displayPrice}</span>
+                    {originalPrice && (
+                      <span className="fs-5 text-muted text-decoration-line-through mb-1">₹{originalPrice}</span>
+                    )}
+                  </div>
+                  {originalPrice && (
+                    <p className="text-success small fw-semibold mt-2 mb-0">
+                      ✓ Inclusive of all taxes (You Save ₹{savings}!)
+                    </p>
+                  )}
+                </div>
+
+                {/* Spec Indicators Grid */}
+                <div className="row g-3 mb-4">
+                  <div className="col-sm-6">
+                    <div className="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                      <span className="text-muted small">Weight:</span>
+                      <strong className="text-dark small">{product.weight || '100g'}</strong>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                      <span className="text-muted small">Availability:</span>
+                      {product.stockQuantity > 0 ? (
+                        <span className="text-success small fw-bold">✓ In Stock</span>
+                      ) : (
+                        <span className="text-secondary small fw-bold">Out of Stock</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="mb-4">
+                  <h6 className="fw-bold text-dark mb-2">Description</h6>
+                  <p className="text-muted small" style={{ lineHeight: '1.7' }}>
+                    {product.description || 'Discover our premium selection of farm-fresh estate spices. Carefully sorted, graded, and vacuum sealed to retain rich culinary benefits and natural moisture content.'}
+                  </p>
+                </div>
               </div>
-              <button className="mt-6 w-full rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white hover:bg-brand-700">Add to cart</button>
+
+              {/* Action Panel */}
+              <div className="border-top pt-4">
+                {product.stockQuantity > 0 ? (
+                  <div>
+                    {/* Quantity Selector */}
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                      <span className="text-muted small fw-semibold">Quantity:</span>
+                      <div className="d-flex align-items-center border border-light rounded-pill p-1 bg-light">
+                        <button 
+                          className="btn btn-sm btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" 
+                          style={{ width: '32px', height: '32px' }}
+                          onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        >
+                          -
+                        </button>
+                        <span className="px-3 fw-bold text-dark" style={{ minWidth: '40px', textAlign: 'center' }}>{quantity}</span>
+                        <button 
+                          className="btn btn-sm btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" 
+                          style={{ width: '32px', height: '32px' }}
+                          onClick={() => setQuantity(q => q + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* CTA Buttons */}
+                    <div className="row g-3">
+                      <div className="col-sm-6">
+                        <button 
+                          onClick={handleAddToCart}
+                          className="btn w-100 py-3 rounded-pill btn-cherry fw-bold d-flex align-items-center justify-content-center gap-2"
+                        >
+                          {added ? (
+                            <>
+                              <Check size={18} /> <span>Added to Bag!</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag size={18} /> <span>Add to Bag</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="col-sm-6">
+                        <button 
+                          onClick={handleBuyNow}
+                          className="btn w-100 py-3 rounded-pill btn-gold fw-bold text-white"
+                        >
+                          Buy It Now
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="btn btn-secondary w-100 py-3 rounded-pill fw-bold" disabled>
+                    Product Out Of Stock
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Detailed Tabs/Accordions */}
+        <section className="mt-5 bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light animate__animated animate__fadeInUp">
+          <h4 className="fw-bold text-dark mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Cooking Tips & Recommendations</h4>
+          <div className="row g-4">
+            <div className="col-md-6">
+              <div className="border-start border-cherry border-3 ps-3 mb-4">
+                <h6 className="fw-bold text-dark">Suggested Culinary Uses</h6>
+                <p className="text-muted small">Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces.</p>
+              </div>
+              <div className="border-start border-cherry border-3 ps-3">
+                <h6 className="fw-bold text-dark">Authentic Sourcing Guarantee</h6>
+                <p className="text-muted small">Ethically hand-picked from family estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention.</p>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="border-start border-cherry border-3 ps-3 mb-4">
+                <h6 className="fw-bold text-dark">Storage & Care</h6>
+                <p className="text-muted small">Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils.</p>
+              </div>
+              <div className="border-start border-cherry border-3 ps-3">
+                <h6 className="fw-bold text-dark">Allergen Safety</h6>
+                <p className="text-muted small">Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment.</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
+
       <Footer />
-    </div>);
+    </div>
+  );
 }
