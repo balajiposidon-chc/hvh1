@@ -341,3 +341,35 @@ input:focus, select:focus, textarea:focus, .form-control:focus {
   cursor: pointer;
 }
 
+/* Dashboard dynamic colors mappings for Tailwind utility emulation */
+.bg-primary {
+  background-color: var(--cherry-red) !important;
+}
+
+.bg-primary-dark, .hover\:bg-primary-dark:hover {
+  background-color: var(--cherry-dark) !important;
+}
+
+.text-primary {
+  color: var(--cherry-red) !important;
+}
+
+.border-primary {
+  border-color: var(--cherry-red) !important;
+}
+
+.bg-primary\/10 {
+  background-color: var(--cherry-light, rgba(210, 20, 58, 0.1)) !important;
+}
+
+.bg-primary\/5 {
+  background-color: var(--cherry-light, rgba(210, 20, 58, 0.05)) !important;
+  opacity: 0.9;
+}
+
+.border-primary\/45 {
+  border-color: var(--cherry-red) !important;
+  opacity: 0.45;
+}
+
+
