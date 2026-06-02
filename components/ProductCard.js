@@ -1,7 +1,14 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { Star, Eye } from 'lucide-react';
+import { Star, Eye, ShoppingBag, Check } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 
 export default function ProductCard({ product }) {
+    const { addToCart } = useCart();
+    const [added, setAdded] = useState(false);
+
     const displayPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
     const originalPrice = product.discountPrice > 0 ? product.price : null;
     const savings = originalPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
@@ -12,6 +19,16 @@ export default function ProductCard({ product }) {
     // Stars rating calculation
     const ratingValue = product.rating || 4.5;
     const fullStars = Math.floor(ratingValue);
+
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (product.stockQuantity > 0) {
+            addToCart(product);
+            setAdded(true);
+            setTimeout(() => setAdded(false), 2000);
+        }
+    };
 
     return (
       <div className="card h-100 border-0 glass-card overflow-hidden position-relative animate__animated animate__fadeInUp" style={{ borderRadius: '20px' }}>
@@ -95,6 +112,27 @@ export default function ProductCard({ product }) {
                 <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1" style={{ fontSize: '0.65rem' }}>In Stock</span>
               )}
             </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="mt-3">
+            <button 
+              onClick={handleAddToCart}
+              className={`w-100 ${added ? 'btn-success-sm' : 'btn-cherry-sm'}`}
+              disabled={product.stockQuantity <= 0}
+            >
+              {added ? (
+                <>
+                  <Check size={16} />
+                  <span>Added to Bag!</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={16} />
+                  <span>{product.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Bag'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
