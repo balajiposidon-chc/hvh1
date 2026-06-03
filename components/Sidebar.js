@@ -33,7 +33,7 @@ export default function Sidebar() {
           <img src="/logo.jpg" alt="Hill & Valley" className="rounded-full object-cover" style={{ height: '35px', width: '35px' }} />
           <h4 className="text-2xl font-bold text-white m-0" style={{ fontFamily: "'Playfair Display', serif" }}>Hill & Valley</h4>
         </div>
-        <span className="text-neutral-400 text-sm mt-2 block px-3 py-1 bg-neutral-800 rounded-full inline-block">{user.role} Panel</span>
+        <span className="text-white text-sm mt-2 block px-3 py-1 bg-neutral-800 rounded-full inline-block">{user.role} Panel</span>
       </div>
       
       <div className="flex-1 px-4 py-6 overflow-y-auto">
@@ -49,10 +49,10 @@ export default function Sidebar() {
                   className={`text-decoration-none flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                      : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                      : 'text-white hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-white/80'}`} />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               </li>
@@ -69,10 +69,10 @@ export default function Sidebar() {
             </div>
             <div>
               <p className="font-semibold text-white leading-tight">{user.name}</p>
-              <p className="text-xs text-neutral-400">{user.email}</p>
+              <p className="text-xs text-white/70">{user.email}</p>
             </div>
           </div>
-          <Link href="/" className="text-decoration-none flex items-center gap-2 text-sm text-neutral-300 hover:text-accent transition-colors py-2 border-t border-neutral-700/50">
+          <Link href="/" className="text-decoration-none flex items-center gap-2 text-sm text-white hover:text-accent transition-colors py-2 border-t border-neutral-700/50">
             <Home className="w-4 h-4" /> Go to Storefront
           </Link>
           <button 
