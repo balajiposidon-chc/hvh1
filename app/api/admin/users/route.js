@@ -27,7 +27,10 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  if (!(await checkAuth())) {
+  const session = await getServerSession(authOptions);
+  const loggedInRole = session?.user?.role;
+  const roleCheck = loggedInRole?.toLowerCase();
+  if (!roleCheck || !['admin', 'super admin', 'superadmin'].includes(roleCheck)) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
   const body = await request.json();
@@ -35,6 +38,11 @@ export async function POST(request) {
   
   if (!name || !email || !password) {
     return NextResponse.json({ success: false, message: 'Name, email, and password are required' }, { status: 400 });
+  }
+  
+  const isSuperAdmin = loggedInRole === 'Super Admin';
+  if (role === 'Super Admin' && !isSuperAdmin) {
+    return NextResponse.json({ success: false, message: 'Only a Super Admin can create a Super Admin account' }, { status: 403 });
   }
   
   await connectToDatabase();
