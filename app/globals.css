@@ -419,4 +419,75 @@ footer a:hover {
   opacity: 0.45;
 }
 
+/* Fix Admin Panel & prevent theme customization from affecting it */
+.admin-panel-fixed {
+  --dynamic-color-scheme: light !important;
+  --dynamic-primary: #D2143A !important;
+  --dynamic-bg: #F8F9FA !important;
+  --dynamic-font: #1A1A1A !important;
+  --dynamic-font-big: #1A1A1A !important;
+  --dynamic-font-small: #555555 !important;
+  --dynamic-card: #FFFFFF !important;
+  --dynamic-border: #E2E8F0 !important;
+  --dynamic-bg-light: #F1F5F9 !important;
+  --dynamic-text-muted: #64748B !important;
+  --dynamic-stone-dark: #F1F5F9 !important;
+  
+  background-color: #F8F9FA !important;
+  color: #1A1A1A !important;
+}
+
+/* Specific content text resets in admin layout */
+.admin-panel-fixed main h1, 
+.admin-panel-fixed main h2, 
+.admin-panel-fixed main h3, 
+.admin-panel-fixed main h4, 
+.admin-panel-fixed main h5, 
+.admin-panel-fixed main h6, 
+.admin-panel-fixed main .card-title,
+.admin-panel-fixed main .text-dark {
+  color: #1A1A1A !important;
+}
+
+.admin-panel-fixed main p, 
+.admin-panel-fixed main span:not(.badge), 
+.admin-panel-fixed main label, 
+.admin-panel-fixed main .text-muted, 
+.admin-panel-fixed main .card-text {
+  color: #555555 !important;
+}
+
+.admin-panel-fixed main .bg-white {
+  background-color: #FFFFFF !important;
+}
+
+/* Ensure Super Admin dark sidebar layout remains dark and unaffected */
+.admin-panel-fixed .bg-neutral-900 {
+  background-color: #171717 !important;
+  color: #FFFFFF !important;
+}
+
+.admin-panel-fixed .bg-neutral-900 a {
+  color: #A3A3A3 !important;
+}
+
+.admin-panel-fixed .bg-neutral-900 a:hover {
+  background-color: #262626 !important;
+  color: #FFFFFF !important;
+}
+
+.admin-panel-fixed .bg-neutral-900 a.bg-primary {
+  background-color: #D2143A !important;
+  color: #FFFFFF !important;
+}
+
+.admin-panel-fixed .bg-neutral-900 p,
+.admin-panel-fixed .bg-neutral-900 span {
+  color: #A3A3A3 !important;
+}
+
+.admin-panel-fixed .bg-neutral-900 h4 {
+  color: #FFFFFF !important;
+}
+
 

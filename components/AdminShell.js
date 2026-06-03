@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ChevronRight, LayoutDashboard, Package, Settings, ShoppingBag, Users } from 'lucide-react';
 export default function AdminShell({ children }) {
-    return (<div className="min-h-screen bg-slate-50">
+    return (<div className="min-h-screen bg-slate-50 admin-panel-fixed">
       <div className="flex min-h-screen">
         <aside className="w-72 border-r border-slate-200 bg-white px-4 py-6">
           <div className="mb-8">

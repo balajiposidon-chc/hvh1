@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-neutral-100">
+    <div className="flex min-h-screen bg-neutral-100 admin-panel-fixed">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
