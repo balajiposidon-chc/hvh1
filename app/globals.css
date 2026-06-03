@@ -490,4 +490,21 @@ footer a:hover {
   color: #FFFFFF !important;
 }
 
+/* Ensure buttons and badges inside isolated admin layouts render white text */
+.admin-panel-fixed button:not(.btn-outline-danger):not(.bg-neutral-50):not(.hover\:bg-neutral-50):not(.bg-slate-100):not(.bg-neutral-100):not(.border),
+.admin-panel-fixed .btn:not(.btn-outline-danger):not(.btn-light):not(.bg-slate-100):not(.bg-neutral-100):not(.border),
+.admin-panel-fixed .bg-primary,
+.admin-panel-fixed .bg-primary-dark,
+.admin-panel-fixed .badge,
+.admin-panel-fixed button.bg-primary,
+.admin-panel-fixed a.bg-primary,
+.admin-panel-fixed button.btn-cherry,
+.admin-panel-fixed a.btn-cherry,
+.admin-panel-fixed button.btn-cherry-sm,
+.admin-panel-fixed a.btn-cherry-sm,
+.admin-panel-fixed .bg-primary\/20 svg,
+.admin-panel-fixed .bg-primary\/20 {
+  color: #FFFFFF !important;
+}
+
 
