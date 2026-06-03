@@ -33,7 +33,7 @@ export default function Sidebar() {
           <img src="/logo.jpg" alt="Hill & Valley" className="rounded-full object-cover" style={{ height: '35px', width: '35px' }} />
           <h4 className="text-2xl font-bold text-white m-0" style={{ fontFamily: "'Playfair Display', serif" }}>Hill & Valley</h4>
         </div>
-        <span className="text-white text-sm mt-2 block px-3 py-1 bg-neutral-800 rounded-full inline-block">{user.role} Panel</span>
+        <span className="text-white text-sm mt-2 inline-block px-3 py-1 bg-neutral-800 rounded-full">{user.role} Panel</span>
       </div>
       
       <div className="flex-1 px-4 py-6 overflow-y-auto">

@@ -228,7 +228,7 @@ export default function UserAccountsManager() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">{item.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-white">
                               {item.role}
                             </span>
                           </td>

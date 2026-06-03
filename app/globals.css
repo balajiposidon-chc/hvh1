@@ -521,4 +521,25 @@ footer a:hover {
   color: inherit !important;
 }
 
+/* Status and role badges font color overrides to bypass page-level text rules */
+.admin-panel-fixed main span.bg-primary\/10 {
+  color: #FFFFFF !important;
+}
+
+.admin-panel-fixed main span.text-emerald-600 {
+  color: #10B981 !important;
+}
+
+.admin-panel-fixed main span.text-blue-600 {
+  color: #3B82F6 !important;
+}
+
+.admin-panel-fixed main span.text-red-600 {
+  color: #EF4444 !important;
+}
+
+.admin-panel-fixed main span.text-amber-600 {
+  color: #F59E0B !important;
+}
+
 
