@@ -3,26 +3,16 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Store from '@/models/Store';
-import Role from '@/models/Role';
 
-async function hasStorePermission() {
+async function isSuperAdmin() {
   const session = await getServerSession(authOptions);
-  const userRole = session?.user?.role;
-  if (!userRole) return false;
-  if (userRole === 'Super Admin') return true;
-
-  await connectToDatabase();
-  const roleRecord = await Role.findOne({ name: userRole });
-  if (roleRecord) {
-    return roleRecord.permissions.includes('stores');
-  }
-  return false;
+  return session?.user?.role === 'Super Admin';
 }
 
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
-    const isAuthorized = await hasStorePermission();
+    const isAuthorized = await isSuperAdmin();
     if (!isAuthorized) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
     }
@@ -51,7 +41,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectToDatabase();
-    const isAuthorized = await hasStorePermission();
+    const isAuthorized = await isSuperAdmin();
     if (!isAuthorized) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
     }
