@@ -30,6 +30,8 @@ export default function SuperAdminSettingsPage() {
   const [primaryColor, setPrimaryColor] = useState('#D2143A');
   const [bgColor, setBgColor] = useState('#F8F9FA');
   const [fontColor, setFontColor] = useState('#1A1A1A');
+  const [bigFontColor, setBigFontColor] = useState('#1A1A1A');
+  const [smallFontColor, setSmallFontColor] = useState('#555555');
   
   // Hero CMS states
   const [heroTitle, setHeroTitle] = useState('');
@@ -70,6 +72,8 @@ export default function SuperAdminSettingsPage() {
         setPrimaryColor(s.primaryColor || '#D2143A');
         setBgColor(s.bgColor || '#F8F9FA');
         setFontColor(s.fontColor || '#1A1A1A');
+        setBigFontColor(s.bigFontColor || s.fontColor || '#1A1A1A');
+        setSmallFontColor(s.smallFontColor || '#555555');
         
         setHeroTitle(s.heroTitle || '');
         setHeroSubtitle(s.heroSubtitle || '');
@@ -115,6 +119,8 @@ export default function SuperAdminSettingsPage() {
           primaryColor,
           bgColor,
           fontColor,
+          bigFontColor,
+          smallFontColor,
           heroTitle,
           heroSubtitle,
           heroImage,
@@ -147,9 +153,13 @@ export default function SuperAdminSettingsPage() {
     if (mode === 'light') {
       setBgColor('#F8F9FA');
       setFontColor('#1A1A1A');
+      setBigFontColor('#1A1A1A');
+      setSmallFontColor('#555555');
     } else {
       setBgColor('#12100E');
       setFontColor('#E7E5E4');
+      setBigFontColor('#E7E5E4');
+      setSmallFontColor('#A3A3A3');
     }
   };
 
@@ -205,7 +215,7 @@ export default function SuperAdminSettingsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
                 <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                   <label className="form-label text-neutral-700 small fw-semibold d-block mb-2">Primary Accent Color</label>
                   <div className="flex align-items-center gap-2">
@@ -243,18 +253,36 @@ export default function SuperAdminSettingsPage() {
                 </div>
 
                 <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                  <label className="form-label text-neutral-700 small fw-semibold d-block mb-2">Primary Font Color</label>
+                  <label className="form-label text-neutral-700 small fw-semibold d-block mb-2">Big Text Font Color</label>
                   <div className="flex align-items-center gap-2">
                     <input 
                       type="color" 
-                      value={fontColor} 
-                      onChange={(e) => setFontColor(e.target.value)} 
+                      value={bigFontColor} 
+                      onChange={(e) => setBigFontColor(e.target.value)} 
                       className="w-10 h-10 border-0 rounded cursor-pointer"
                     />
                     <input 
                       type="text" 
-                      value={fontColor} 
-                      onChange={(e) => setFontColor(e.target.value)} 
+                      value={bigFontColor} 
+                      onChange={(e) => setBigFontColor(e.target.value)} 
+                      className="form-control rounded-xl p-2 text-xs border border-neutral-200 uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                  <label className="form-label text-neutral-700 small fw-semibold d-block mb-2">Small Text Font Color</label>
+                  <div className="flex align-items-center gap-2">
+                    <input 
+                      type="color" 
+                      value={smallFontColor} 
+                      onChange={(e) => setSmallFontColor(e.target.value)} 
+                      className="w-10 h-10 border-0 rounded cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={smallFontColor} 
+                      onChange={(e) => setSmallFontColor(e.target.value)} 
                       className="form-control rounded-xl p-2 text-xs border border-neutral-200 uppercase"
                     />
                   </div>

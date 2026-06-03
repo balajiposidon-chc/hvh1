@@ -16,6 +16,8 @@ export default async function RootLayout({ children }) {
     const primary = setting.primaryColor || '#D2143A';
     const bg = setting.bgColor || (theme === 'light' ? '#F8F9FA' : '#12100E');
     const font = setting.fontColor || (theme === 'light' ? '#1A1A1A' : '#E7E5E4');
+    const bigFont = setting.bigFontColor || font;
+    const smallFont = setting.smallFontColor || (theme === 'light' ? '#555555' : '#A3A3A3');
     
     const isLight = theme === 'light';
     const cardBg = isLight ? '#FFFFFF' : '#1C1917';
@@ -36,6 +38,8 @@ export default async function RootLayout({ children }) {
             --dynamic-primary: ${primary};
             --dynamic-bg: ${bg};
             --dynamic-font: ${font};
+            --dynamic-font-big: ${bigFont};
+            --dynamic-font-small: ${smallFont};
             --dynamic-card: ${cardBg};
             --dynamic-border: ${border};
             --dynamic-bg-light: ${bgLight};

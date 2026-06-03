@@ -59,6 +59,8 @@ export async function PUT(request) {
           if (body.primaryColor !== undefined) setting.primaryColor = body.primaryColor;
           if (body.bgColor !== undefined) setting.bgColor = body.bgColor;
           if (body.fontColor !== undefined) setting.fontColor = body.fontColor;
+          if (body.bigFontColor !== undefined) setting.bigFontColor = body.bigFontColor;
+          if (body.smallFontColor !== undefined) setting.smallFontColor = body.smallFontColor;
           
           // Hero CMS content
           if (body.heroTitle !== undefined) setting.heroTitle = body.heroTitle;
