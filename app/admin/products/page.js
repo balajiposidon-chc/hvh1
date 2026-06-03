@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import { authOptions } from '@/lib/auth';
@@ -12,7 +12,7 @@ export default async function AdminProductsPage() {
     }
     await connectToDatabase();
     const products = await Product.find().sort({ updatedAt: -1 }).lean();
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Product management</h1>
@@ -44,5 +44,5 @@ export default async function AdminProductsPage() {
           </tbody>
         </table>
       </div>
-    </AdminShell>);
+    </AdminLayout>);
 }

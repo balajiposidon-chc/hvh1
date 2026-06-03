@@ -1,4 +1,4 @@
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import connectToDatabase from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
 import { authOptions } from '@/lib/auth';
@@ -11,7 +11,7 @@ export default async function AdminOrdersPage() {
     }
     await connectToDatabase();
     const orders = await Order.find().sort({ createdAt: -1 }).lean();
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-slate-900">Order management</h1>
         <p className="text-sm text-slate-500">Review orders and update statuses.</p>
@@ -36,5 +36,5 @@ export default async function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
-    </AdminShell>);
+    </AdminLayout>);
 }

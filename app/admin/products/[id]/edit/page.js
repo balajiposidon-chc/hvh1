@@ -1,4 +1,4 @@
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import AdminProductForm from '@/components/AdminProductForm';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
@@ -15,7 +15,7 @@ export default async function AdminProductsEditPage({ params }) {
     if (!product) {
         return <div className="p-12 text-center">Product not found</div>;
     }
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-slate-900">Edit product</h1>
         <p className="text-sm text-slate-500">Update product details and inventory.</p>
@@ -34,5 +34,5 @@ export default async function AdminProductsEditPage({ params }) {
             status: product.status,
             featured: product.featured,
         }}/>
-    </AdminShell>);
+    </AdminLayout>);
 }

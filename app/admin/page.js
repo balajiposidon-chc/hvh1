@@ -1,4 +1,4 @@
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import Product from '@/lib/models/Product';
@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum, order) => sum + (order.total ?? 0), 0);
     const recentOrders = orders.slice(0, 5);
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="grid gap-6 xl:grid-cols-4">
         <CountCard label="Total users" value={totalUsers}/>
         <CountCard label="Total products" value={totalProducts}/>
@@ -48,5 +48,5 @@ export default async function AdminDashboardPage() {
             </div>))}
         </div>
       </div>
-    </AdminShell>);
+    </AdminLayout>);
 }

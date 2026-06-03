@@ -1,4 +1,4 @@
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import AdminUserTable from '@/components/AdminUserTable';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/lib/models/User';
@@ -12,11 +12,11 @@ export default async function AdminUsersPage() {
     }
     await connectToDatabase();
     const users = await User.find().sort({ createdAt: -1 }).lean();
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-slate-900">User management</h1>
         <p className="text-sm text-slate-500">Search, update roles, block accounts, and manage access.</p>
       </div>
       <AdminUserTable users={users.map((user) => ({ id: user._id.toString(), name: user.name, email: user.email, role: user.role, status: user.status, createdAt: user.createdAt.toISOString() }))} mainAdminEmail="admin@store.com"/>
-    </AdminShell>);
+    </AdminLayout>);
 }

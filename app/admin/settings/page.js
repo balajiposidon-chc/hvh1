@@ -1,4 +1,4 @@
-import AdminShell from '@/components/AdminShell';
+import AdminLayout from '@/components/AdminLayout';
 import AdminSettingsForm from '@/components/AdminSettingsForm';
 import connectToDatabase from '@/lib/mongodb';
 import Setting from '@/lib/models/Setting';
@@ -15,7 +15,7 @@ export default async function AdminSettingsPage() {
     if (!setting) {
         setting = await Setting.create({});
     }
-    return (<AdminShell>
+    return (<AdminLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-slate-900">Store settings</h1>
         <p className="text-sm text-slate-500">Update store branding, contact details, and shipping settings.</p>
@@ -33,5 +33,5 @@ export default async function AdminSettingsPage() {
             instagram: setting.socialLinks?.instagram || '',
             twitter: setting.socialLinks?.twitter || '',
         }}/>
-    </AdminShell>);
+    </AdminLayout>);
 }
