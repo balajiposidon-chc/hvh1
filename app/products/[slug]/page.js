@@ -100,8 +100,7 @@ export default function ProductDetailPage() {
                 <img 
                   src={product.images?.[0] ?? '/placeholder.png'} 
                   alt={product.name} 
-                  className="w-100 h-100" 
-                  style={{ objectFit: 'cover' }}
+                  style={{ height: '450px', width: '100%', objectFit: 'cover' }}
                 />
                 {originalPrice && (
                   <span className="position-absolute top-0 start-0 m-3 badge bg-danger text-white rounded-pill px-3 py-2 fw-bold" style={{ fontSize: '0.8rem', background: 'linear-gradient(135deg, #D2143A 0%, #8B0000 100%) !important' }}>

@@ -49,7 +49,7 @@ export default function CartPage() {
                       <div key={item.id} className="d-flex flex-column flex-sm-row align-items-center gap-4 bg-white p-4 rounded-4 shadow-sm border border-light" style={{ transition: 'all 0.3s' }}>
                         {/* Image */}
                         <div className="rounded-3 overflow-hidden bg-light" style={{ width: '100px', height: '100px', flexShrink: 0 }}>
-                          <img src={itemImage} alt={item.name} className="w-100 h-100 object-cover" />
+                          <img src={itemImage} alt={item.name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
                         </div>
                         
                         {/* Details */}

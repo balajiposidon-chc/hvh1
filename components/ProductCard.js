@@ -44,8 +44,8 @@ export default function ProductCard({ product }) {
           <img 
             src={product.images?.[0] ?? '/placeholder.png'} 
             alt={product.name} 
-            className="w-100 h-100 hover-zoom"
-            style={{ objectFit: 'cover', transition: 'transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' }}
+            className="hover-zoom"
+            style={{ width: '100%', height: '230px', objectFit: 'cover', transition: 'transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' }}
           />
           {/* Subtle Hover Overlay */}
           <div className="position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center opacity-0 bg-dark bg-opacity-25" style={{ transition: 'opacity 0.3s ease', cursor: 'pointer' }} id="overlay">

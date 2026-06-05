@@ -203,7 +203,7 @@ export default function CheckoutPage() {
                       const itemPrice = item.discountPrice > 0 ? item.discountPrice : item.price;
                       return (
                         <div key={item.id} className="d-flex align-items-center gap-3">
-                          <img src={item.images?.[0] || '/placeholder.png'} alt={item.name} className="rounded object-cover" style={{ height: '40px', width: '40px' }} />
+                          <img src={item.images?.[0] || '/placeholder.png'} alt={item.name} className="rounded" style={{ height: '40px', width: '40px', objectFit: 'cover' }} />
                           <div className="flex-grow-1 min-w-0">
                             <h6 className="fw-bold text-dark small mb-0 text-truncate">{item.name}</h6>
                             <small className="text-muted">Qty: {item.quantity}</small>

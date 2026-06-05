@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto mt-16 max-w-6xl px-6 pb-16 md:px-12">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_0.7fr]">
           <div className="glass-card overflow-hidden p-0">
-            <img src={product.images?.[0] || 'https://res.cloudinary.com/demo/image/upload/v1680000000/spice.jpg'} alt={product.name} className="h-[420px] w-full object-cover" />
+            <img src={product.images?.[0] || 'https://res.cloudinary.com/demo/image/upload/v1680000000/spice.jpg'} alt={product.name} style={{ height: '420px', width: '100%', objectFit: 'cover' }} />
             <div className="p-10">
               <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-olive">{product.category}</div>
               <h1 className="mt-4 text-5xl font-semibold text-charcoal">{product.name}</h1>

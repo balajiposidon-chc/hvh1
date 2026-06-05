@@ -181,7 +181,7 @@ export default function SuperAdminOrderEditPage({ params }) {
                 {order.items?.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center py-3">
                     <div className="flex items-center gap-3">
-                      <img src={item.image || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} alt="" className="w-10 h-10 rounded object-cover border border-neutral-200" />
+                      <img src={item.image || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} alt="" className="rounded border border-neutral-200" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
                       <div>
                         <p className="font-bold text-neutral-950 mb-0">{item.name}</p>
                         <small className="text-neutral-500">Price: ₹{item.price}</small>

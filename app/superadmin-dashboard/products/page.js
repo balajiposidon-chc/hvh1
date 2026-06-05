@@ -113,8 +113,8 @@ export default function ProductsManagement() {
                   <tr key={product._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200">
-                          <img src={product.images?.[0] || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} className="w-full h-full object-cover" alt="" />
+                        <div className="rounded-lg bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200" style={{ width: '48px', height: '48px' }}>
+                          <img src={product.images?.[0] || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} style={{ width: '48px', height: '48px', objectFit: 'cover' }} alt="" />
                         </div>
                         <div>
                           <p className="font-bold text-neutral-900 mb-0">{product.name}</p>
