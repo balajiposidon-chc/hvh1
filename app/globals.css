@@ -27,6 +27,8 @@ body {
   min-height: 100vh;
   background: var(--gold-light);
   color: var(--charcoal-small);
+  --text-color-big: var(--charcoal-big);
+  --text-color-small: var(--charcoal-small);
 }
 
 a, a:hover {
@@ -196,12 +198,12 @@ img {
 body .bg-white, body .glass-card {
   border-color: var(--border-color) !important;
   background-color: var(--platinum) !important;
-  color: var(--charcoal-small) !important;
+  color: var(--charcoal-small);
 }
 
 body .card {
   background-color: var(--dynamic-bg-light, #26211E) !important;
-  color: var(--charcoal-small) !important;
+  color: var(--charcoal-small);
 }
 
 body .text-dark {
@@ -214,16 +216,16 @@ body .text-muted {
 
 body .card-body {
   background-color: var(--platinum) !important;
-  color: var(--charcoal-small) !important;
+  color: var(--charcoal-small);
 }
 
-/* Explicit font color splits for Big & Small texts */
+/* Explicit font color splits for Big & Small texts using custom variables */
 h1, h2, h3, h4, h5, h6, 
 .hero-title, 
 .card-title, 
 .card-title a,
 .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
-  color: var(--charcoal-big);
+  color: var(--text-color-big);
 }
 
 p, 
@@ -231,7 +233,27 @@ p,
 .hero-subtitle, 
 .form-label, 
 label {
-  color: var(--charcoal-small);
+  color: var(--text-color-small);
+}
+
+/* Reset text color variables inside elements that define custom color environments */
+.text-white, [class*="text-white"],
+.text-light, [class*="text-light"],
+.text-cherry, [class*="text-cherry"],
+.bg-cherry-gradient, 
+.bg-gold-gradient,
+.bg-neutral-900,
+.bg-primary,
+.bg-primary-dark,
+.btn-primary,
+.btn-cherry,
+.btn-cherry-sm,
+.btn-success-sm,
+.badge,
+.alert-danger,
+.alert-success {
+  --text-color-big: currentColor;
+  --text-color-small: currentColor;
 }
 
 body .border-light, body .border-slate-200, body .border, body .border-bottom, body .border-top {
@@ -433,28 +455,11 @@ footer a:hover {
   --dynamic-text-muted: #64748B !important;
   --dynamic-stone-dark: #F1F5F9 !important;
   
+  --text-color-big: #1A1A1A;
+  --text-color-small: #555555;
+  
   background-color: #F8F9FA !important;
   color: #1A1A1A !important;
-}
-
-/* Specific content text resets in admin layout */
-.admin-panel-fixed h1, 
-.admin-panel-fixed h2, 
-.admin-panel-fixed h3, 
-.admin-panel-fixed h4, 
-.admin-panel-fixed h5, 
-.admin-panel-fixed h6, 
-.admin-panel-fixed .card-title,
-.admin-panel-fixed .text-dark {
-  color: #1A1A1A !important;
-}
-
-.admin-panel-fixed p, 
-.admin-panel-fixed span:not(.badge), 
-.admin-panel-fixed label, 
-.admin-panel-fixed .text-muted, 
-.admin-panel-fixed .card-text {
-  color: #555555 !important;
 }
 
 .admin-panel-fixed .bg-white {
