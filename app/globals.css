@@ -535,7 +535,7 @@ footer a:hover {
 
 /* Status and role badges font color overrides to bypass page-level text rules */
 .admin-panel-fixed span.bg-primary\/10 {
-  color: #FFFFFF !important;
+  color: var(--cherry-red, #D2143A) !important;
 }
 
 .admin-panel-fixed span.text-emerald-600 {
