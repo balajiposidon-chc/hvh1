@@ -246,6 +246,7 @@ export default function UserAccountsManager() {
                               onClick={() => handleEditUser(item)}
                               className="btn btn-sm btn-primary py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
                               title="Edit User"
+                              aria-label="Edit User"
                             >
                               <Edit2 size={12} />
                             </button>
@@ -255,6 +256,7 @@ export default function UserAccountsManager() {
                                 item.status === 'active' ? 'btn-warning' : 'btn-outline-success'
                               }`}
                               title={item.status === 'active' ? 'Block Account' : 'Unblock Account'}
+                              aria-label={item.status === 'active' ? 'Block Account' : 'Unblock Account'}
                             >
                               {item.status === 'active' ? <ShieldAlert size={12} /> : <UserCheck size={12} />}
                             </button>
@@ -262,6 +264,7 @@ export default function UserAccountsManager() {
                               onClick={() => handleDeleteUser(item._id, item.email)}
                               className="btn btn-sm btn-danger py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
                               title="Delete Account"
+                              aria-label="Delete Account"
                               disabled={item.email === 'admin@store.com' || item.email === currentSuperAdmin.email}
                             >
                               <Trash2 size={12} />
@@ -287,8 +290,9 @@ export default function UserAccountsManager() {
               {!editMode && (
                 <>
                   <div>
-                    <label className="form-label text-neutral-700 small fw-semibold">Account Owner Name</label>
+                    <label htmlFor="name-input" className="form-label text-neutral-700 small fw-semibold">Account Owner Name</label>
                     <input 
+                      id="name-input"
                       type="text" 
                       value={name} 
                       onChange={(e) => setName(e.target.value)} 
@@ -299,8 +303,9 @@ export default function UserAccountsManager() {
                   </div>
 
                   <div>
-                    <label className="form-label text-neutral-700 small fw-semibold">Login Email Address</label>
+                    <label htmlFor="email-input" className="form-label text-neutral-700 small fw-semibold">Login Email Address</label>
                     <input 
+                      id="email-input"
                       type="email" 
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
@@ -311,8 +316,9 @@ export default function UserAccountsManager() {
                   </div>
 
                   <div>
-                    <label className="form-label text-neutral-700 small fw-semibold">Password</label>
+                    <label htmlFor="password-input" className="form-label text-neutral-700 small fw-semibold">Password</label>
                     <input 
+                      id="password-input"
                       type="password" 
                       value={password} 
                       onChange={(e) => setPassword(e.target.value)} 
@@ -325,8 +331,9 @@ export default function UserAccountsManager() {
               )}
 
               <div>
-                <label className="form-label text-neutral-700 small fw-semibold">Assign Role Profile</label>
+                <label htmlFor="role-select" className="form-label text-neutral-700 small fw-semibold">Assign Role Profile</label>
                 <select 
+                  id="role-select"
                   value={role} 
                   onChange={(e) => setRole(e.target.value)} 
                   className="form-select rounded-xl p-3 bg-neutral-50 border-0 text-sm outline-none w-full"
@@ -339,8 +346,9 @@ export default function UserAccountsManager() {
 
               {editMode && (
                 <div>
-                  <label className="form-label text-neutral-700 small fw-semibold">Account Status</label>
+                  <label htmlFor="status-select" className="form-label text-neutral-700 small fw-semibold">Account Status</label>
                   <select 
+                    id="status-select"
                     value={status} 
                     onChange={(e) => setStatus(e.target.value)} 
                     className="form-select rounded-xl p-3 bg-neutral-50 border-0 text-sm outline-none w-full"
