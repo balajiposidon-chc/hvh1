@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from './Button';
 import Input from './Input';
 import { Upload, Trash2 } from 'lucide-react';
@@ -12,6 +12,22 @@ export default function AdminProductForm({ initialData, action }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                if (data.success && data.categories) {
+                    setCategories(data.categories);
+                }
+            } catch (err) {
+                console.error('Failed to load categories', err);
+            }
+        }
+        fetchCategories();
+    }, []);
 
     const handleChange = (key, value) => {
         setForm((current) => ({ ...current, [key]: value }));
@@ -132,7 +148,18 @@ export default function AdminProductForm({ initialData, action }) {
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                     <span className="text-sm text-slate-700">Category</span>
-                    <Input value={form.category} onChange={(e) => handleChange('category', e.target.value)} required />
+                    <Input 
+                        list="category-list"
+                        value={form.category} 
+                        onChange={(e) => handleChange('category', e.target.value)} 
+                        placeholder="Select or type a category..."
+                        required 
+                    />
+                    <datalist id="category-list">
+                        {categories.map((cat) => (
+                            <option key={cat._id} value={cat.name} />
+                        ))}
+                    </datalist>
                 </label>
                 <label className="block">
                     <span className="text-sm text-slate-700">Brand</span>
