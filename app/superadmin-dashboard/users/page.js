@@ -244,7 +244,7 @@ export default function UserAccountsManager() {
                           <td className="px-6 py-4 whitespace-nowrap text-right space-x-1.5">
                             <button 
                               onClick={() => handleEditUser(item)}
-                              className="btn btn-sm btn-outline-primary py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
+                              className="btn btn-sm btn-primary py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
                               title="Edit User"
                             >
                               <Edit2 size={12} />
@@ -252,7 +252,7 @@ export default function UserAccountsManager() {
                             <button 
                               onClick={() => toggleUserBlock(item)}
                               className={`btn btn-sm py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1 ${
-                                item.status === 'active' ? 'btn-outline-warning' : 'btn-outline-success'
+                                item.status === 'active' ? 'btn-warning' : 'btn-outline-success'
                               }`}
                               title={item.status === 'active' ? 'Block Account' : 'Unblock Account'}
                             >
@@ -260,7 +260,7 @@ export default function UserAccountsManager() {
                             </button>
                             <button 
                               onClick={() => handleDeleteUser(item._id, item.email)}
-                              className="btn btn-sm btn-outline-danger py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
+                              className="btn btn-sm btn-danger py-1 px-3 rounded-pill text-xs font-bold d-inline-flex align-items-center gap-1"
                               title="Delete Account"
                               disabled={item.email === 'admin@store.com' || item.email === currentSuperAdmin.email}
                             >

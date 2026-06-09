@@ -5,10 +5,10 @@
 :root {
   color-scheme: var(--dynamic-color-scheme, dark);
   --cherry-red: var(--dynamic-primary, #D2143A);
-  --cherry-dark: var(--dynamic-primary-dark, #8B0000);
-  --cherry-light: var(--dynamic-primary-light, #2A040B);
+  --cherry-dark: color-mix(in srgb, var(--cherry-red) 65%, black);
+  --cherry-light: color-mix(in srgb, var(--cherry-red) 15%, var(--dynamic-bg, #12100E));
   --gold-accent: var(--dynamic-gold-accent, #C5A880);
-  --gold-dark: var(--dynamic-gold-dark, #8C6D43);
+  --gold-dark: color-mix(in srgb, var(--gold-accent) 70%, black);
   --gold-light: var(--dynamic-bg, #12100E);
   --charcoal: var(--dynamic-font, #E7E5E4);
   --charcoal-big: var(--dynamic-font-big, var(--dynamic-font, #E7E5E4));
@@ -239,11 +239,11 @@ body .border-light, body .border-slate-200, body .border, body .border-bottom, b
 }
 
 body .dropdown-item {
-  color: #E7E5E4 !important;
+  color: var(--charcoal-big, #E7E5E4) !important;
 }
 
 body .dropdown-item:hover {
-  background-color: #26211E !important;
+  background-color: var(--dynamic-bg-light, #26211E) !important;
   color: var(--cherry-red) !important;
 }
 
@@ -270,14 +270,14 @@ header a.text-dark:hover .text-muted {
 
 /* Forms & Inputs */
 input, select, textarea, .form-control {
-  background-color: #26211E !important;
-  color: #F5F5F5 !important;
-  border: 1px solid rgba(197, 168, 128, 0.25) !important;
+  background-color: var(--dynamic-bg-light, #26211E) !important;
+  color: var(--dynamic-font, #F5F5F5) !important;
+  border: 1px solid var(--border-color, rgba(197, 168, 128, 0.25)) !important;
 }
 
 input:focus, select:focus, textarea:focus, .form-control:focus {
-  background-color: #26211E !important;
-  color: #F5F5F5 !important;
+  background-color: var(--dynamic-bg-light, #26211E) !important;
+  color: var(--dynamic-font, #F5F5F5) !important;
   border-color: var(--cherry-red) !important;
   box-shadow: 0 0 0 0.25rem rgba(210, 20, 58, 0.25) !important;
 }
@@ -438,27 +438,40 @@ footer a:hover {
 }
 
 /* Specific content text resets in admin layout */
-.admin-panel-fixed main h1, 
-.admin-panel-fixed main h2, 
-.admin-panel-fixed main h3, 
-.admin-panel-fixed main h4, 
-.admin-panel-fixed main h5, 
-.admin-panel-fixed main h6, 
-.admin-panel-fixed main .card-title,
-.admin-panel-fixed main .text-dark {
+.admin-panel-fixed h1, 
+.admin-panel-fixed h2, 
+.admin-panel-fixed h3, 
+.admin-panel-fixed h4, 
+.admin-panel-fixed h5, 
+.admin-panel-fixed h6, 
+.admin-panel-fixed .card-title,
+.admin-panel-fixed .text-dark {
   color: #1A1A1A !important;
 }
 
-.admin-panel-fixed main p, 
-.admin-panel-fixed main span:not(.badge), 
-.admin-panel-fixed main label, 
-.admin-panel-fixed main .text-muted, 
-.admin-panel-fixed main .card-text {
+.admin-panel-fixed p, 
+.admin-panel-fixed span:not(.badge), 
+.admin-panel-fixed label, 
+.admin-panel-fixed .text-muted, 
+.admin-panel-fixed .card-text {
   color: #555555 !important;
 }
 
-.admin-panel-fixed main .bg-white {
+.admin-panel-fixed .bg-white {
   background-color: #FFFFFF !important;
+}
+
+/* Alert boxes inside admin layout */
+.admin-panel-fixed .alert-danger {
+  background-color: #FFF2F4 !important;
+  color: #D2143A !important;
+  border: none !important;
+}
+
+.admin-panel-fixed .alert-success {
+  background-color: #E6F4EA !important;
+  color: #137333 !important;
+  border: none !important;
 }
 
 /* Ensure Super Admin dark sidebar layout remains dark and unaffected */
@@ -495,50 +508,44 @@ footer a:hover {
 }
 
 /* Ensure buttons and badges inside isolated admin layouts render white text */
-.admin-panel-fixed button:not(.btn-outline-danger):not(.bg-neutral-50):not(.hover\:bg-neutral-50):not(.bg-slate-100):not(.bg-neutral-100):not(.border),
-.admin-panel-fixed .btn:not(.btn-outline-danger):not(.btn-light):not(.bg-slate-100):not(.bg-neutral-100):not(.border),
 .admin-panel-fixed .bg-primary,
 .admin-panel-fixed .bg-primary-dark,
-.admin-panel-fixed .badge,
-.admin-panel-fixed button.bg-primary,
-.admin-panel-fixed a.bg-primary,
-.admin-panel-fixed button.btn-cherry,
-.admin-panel-fixed a.btn-cherry,
-.admin-panel-fixed button.btn-cherry-sm,
-.admin-panel-fixed a.btn-cherry-sm,
-.admin-panel-fixed .bg-primary\/20 svg,
-.admin-panel-fixed .bg-primary\/20 {
+.admin-panel-fixed .btn-primary,
+.admin-panel-fixed .btn-cherry,
+.admin-panel-fixed .btn-cherry-sm,
+.admin-panel-fixed .btn-success-sm,
+.admin-panel-fixed .badge {
   color: #FFFFFF !important;
 }
 
 /* Inherit text/icon colors inside buttons/btn to prevent spans/svgs from being overridden by page small-text rules */
-.admin-panel-fixed main button span,
-.admin-panel-fixed main .btn span,
-.admin-panel-fixed main button svg,
-.admin-panel-fixed main .btn svg,
-.admin-panel-fixed main a.btn span,
-.admin-panel-fixed main a.btn svg {
+.admin-panel-fixed button span,
+.admin-panel-fixed .btn span,
+.admin-panel-fixed button svg,
+.admin-panel-fixed .btn svg,
+.admin-panel-fixed a.btn span,
+.admin-panel-fixed a.btn svg {
   color: inherit !important;
 }
 
 /* Status and role badges font color overrides to bypass page-level text rules */
-.admin-panel-fixed main span.bg-primary\/10 {
+.admin-panel-fixed span.bg-primary\/10 {
   color: #FFFFFF !important;
 }
 
-.admin-panel-fixed main span.text-emerald-600 {
+.admin-panel-fixed span.text-emerald-600 {
   color: #10B981 !important;
 }
 
-.admin-panel-fixed main span.text-blue-600 {
+.admin-panel-fixed span.text-blue-600 {
   color: #3B82F6 !important;
 }
 
-.admin-panel-fixed main span.text-red-600 {
+.admin-panel-fixed span.text-red-600 {
   color: #EF4444 !important;
 }
 
-.admin-panel-fixed main span.text-amber-600 {
+.admin-panel-fixed span.text-amber-600 {
   color: #F59E0B !important;
 }
 
