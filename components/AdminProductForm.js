@@ -5,8 +5,19 @@ import Input from './Input';
 import { Upload, Trash2 } from 'lucide-react';
 
 export default function AdminProductForm({ initialData, action }) {
-    const [form, setForm] = useState(initialData ?? {
-        name: '', slug: '', description: '', price: '', discountPrice: '', category: '', brand: '', stock: '0', images: '', status: 'active', featured: false,
+    const [form, setForm] = useState({
+        name: initialData?.name || '',
+        slug: initialData?.slug || '',
+        description: initialData?.description || '',
+        price: initialData?.price || '',
+        discountPrice: initialData?.discountPrice || '',
+        category: initialData?.category || '',
+        brand: initialData?.brand || '',
+        stock: initialData?.stock || '0',
+        images: initialData?.images || '',
+        status: initialData?.status || 'active',
+        featured: initialData?.featured || false,
+        store: initialData?.store || '',
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');

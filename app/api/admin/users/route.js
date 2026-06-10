@@ -7,10 +7,12 @@ import User from '@/models/User';
 async function checkAuth() {
   const session = await getServerSession(authOptions);
   const role = session?.user?.role?.toLowerCase();
-  if (!role || !['admin', 'super admin', 'superadmin'].includes(role)) {
-    return false;
+  const permissions = session?.user?.permissions || [];
+  const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+  if (isSuperAdmin || permissions.includes('users')) {
+    return true;
   }
-  return true;
+  return false;
 }
 
 export async function GET(request) {
@@ -30,7 +32,9 @@ export async function POST(request) {
   const session = await getServerSession(authOptions);
   const loggedInRole = session?.user?.role;
   const roleCheck = loggedInRole?.toLowerCase();
-  if (!roleCheck || !['admin', 'super admin', 'superadmin'].includes(roleCheck)) {
+  const permissions = session?.user?.permissions || [];
+  const isSuperAdmin = roleCheck === 'super admin' || roleCheck === 'superadmin';
+  if (!isSuperAdmin && !permissions.includes('users')) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
   const body = await request.json();
@@ -40,7 +44,6 @@ export async function POST(request) {
     return NextResponse.json({ success: false, message: 'Name, email, and password are required' }, { status: 400 });
   }
   
-  const isSuperAdmin = loggedInRole === 'Super Admin';
   if (role === 'Super Admin' && !isSuperAdmin) {
     return NextResponse.json({ success: false, message: 'Only a Super Admin can create a Super Admin account' }, { status: 403 });
   }

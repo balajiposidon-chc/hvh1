@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, Save } from 'lucide-react';
 
 export default function RolePermissionManager() {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -31,16 +31,20 @@ export default function RolePermissionManager() {
     { key: 'accounting', name: 'Accounting & Expenses', desc: 'Allows viewing balance ledgers, tracking corporate expenditures, and invoices.' },
     { key: 'users', name: 'User Account Controls', desc: 'Allows creating accounts, updating role titles, and blocking/unblocking logins.' },
     { key: 'rbac', name: 'Roles & RBAC Permissions', desc: 'Allows creating custom system roles and configuring permissions mapping.' },
+    { key: 'audit', name: 'System Audit & Compliance', desc: 'Allows running diagnostics, database scan, and exporting ledger reports.' },
     { key: 'settings', name: 'Settings & Style Customizer', desc: 'Allows theme switches, changing primary color palettes, and editing hero CMS text.' },
   ];
 
   useEffect(() => {
-    if (user && user.role !== 'Super Admin') {
-      router.push('/');
-    } else if (user) {
-      fetchRoles();
+    if (user) {
+      const isAuthorized = user.role === 'Super Admin' || permissions.includes('rbac');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchRoles();
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   const fetchRoles = async () => {
     try {

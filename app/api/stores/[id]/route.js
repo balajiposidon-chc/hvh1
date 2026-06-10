@@ -12,23 +12,34 @@ async function isSuperAdmin() {
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
-    const isAuthorized = await isSuperAdmin();
-    if (!isAuthorized) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
-    }
+    const session = await getServerSession(authOptions);
+    const role = session?.user?.role?.toLowerCase();
+    const userId = session?.user?.id || session?.user?._id;
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
 
-    const body = await request.json();
     const store = await Store.findById(params.id);
     if (!store) {
       return NextResponse.json({ success: false, message: 'Store not found' }, { status: 404 });
     }
 
+    const isManager = store.manager && store.manager.toString() === userId;
+
+    if (!isSuperAdmin && !isManager) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 403 });
+    }
+
+    const body = await request.json();
+
     if (body.name !== undefined) store.name = body.name;
     if (body.location !== undefined) store.location = body.location;
-    if (body.status !== undefined) store.status = body.status;
     if (body.contactNumber !== undefined) store.contactNumber = body.contactNumber;
     if (body.email !== undefined) store.email = body.email;
-    if (body.manager !== undefined) store.manager = body.manager || null;
+
+    // Only Super Admin can change status or manager assignment
+    if (isSuperAdmin) {
+      if (body.status !== undefined) store.status = body.status;
+      if (body.manager !== undefined) store.manager = body.manager || null;
+    }
 
     await store.save();
     const populatedStore = await Store.findById(store._id).populate('manager');

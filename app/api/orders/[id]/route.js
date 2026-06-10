@@ -17,6 +17,12 @@ export async function PUT(request, { params }) {
   if (!(await checkAuth())) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
+  const session = await getServerSession(authOptions);
+  const role = session?.user?.role?.toLowerCase();
+  const userId = session?.user?.id || session?.user?._id;
+  const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+  const isStoreManager = role === 'store manager' || role === 'manager';
+
   const body = await request.json();
   const { status, isPaid, isDelivered, street, city, state, zipCode, phone } = body;
   
@@ -25,6 +31,14 @@ export async function PUT(request, { params }) {
     const order = await Order.findById(params.id);
     if (!order) {
       return NextResponse.json({ success: false, message: 'Order not found' }, { status: 404 });
+    }
+
+    if (isStoreManager && !isSuperAdmin) {
+      const Store = (await import('@/models/Store')).default;
+      const managerStore = await Store.findOne({ manager: userId });
+      if (!managerStore || order.store?.toString() !== managerStore._id.toString()) {
+        return NextResponse.json({ success: false, message: 'Unauthorized: Order belongs to another store' }, { status: 403 });
+      }
     }
     
     if (status) order.status = status;
@@ -60,12 +74,28 @@ export async function DELETE(request, { params }) {
   if (!(await checkAuth())) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
+  const session = await getServerSession(authOptions);
+  const role = session?.user?.role?.toLowerCase();
+  const userId = session?.user?.id || session?.user?._id;
+  const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+  const isStoreManager = role === 'store manager' || role === 'manager';
+
   await connectToDatabase();
   try {
-    const deleted = await Order.findByIdAndDelete(params.id);
-    if (!deleted) {
+    const order = await Order.findById(params.id);
+    if (!order) {
       return NextResponse.json({ success: false, message: 'Order not found' }, { status: 404 });
     }
+
+    if (isStoreManager && !isSuperAdmin) {
+      const Store = (await import('@/models/Store')).default;
+      const managerStore = await Store.findOne({ manager: userId });
+      if (!managerStore || order.store?.toString() !== managerStore._id.toString()) {
+        return NextResponse.json({ success: false, message: 'Unauthorized: Order belongs to another store' }, { status: 403 });
+      }
+    }
+
+    await order.deleteOne();
     return NextResponse.json({ success: true, message: 'Order deleted successfully' });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

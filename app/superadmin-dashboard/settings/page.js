@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Save, Palette, Layout, Settings, Sparkles } from 'lucide-react';
 
 export default function SuperAdminSettingsPage() {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -46,12 +46,15 @@ export default function SuperAdminSettingsPage() {
   const [twitter, setTwitter] = useState('');
 
   useEffect(() => {
-    if (user && user.role !== 'Super Admin') {
-      router.push('/');
-    } else if (user) {
-      fetchSettings();
+    if (user) {
+      const isAuthorized = user.role === 'Super Admin' || permissions.includes('settings');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchSettings();
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   const fetchSettings = async () => {
     try {

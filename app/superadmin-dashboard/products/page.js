@@ -8,18 +8,21 @@ import { motion } from 'framer-motion';
 import { Plus, Search, Edit, Trash2, Tag, Eye } from 'lucide-react';
 
 export default function ProductsManagement() {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && user.role !== 'Super Admin' && user.role !== 'Admin' && user.role !== 'Store Manager') {
-      router.push('/');
-    } else if (user) {
-      fetchProducts();
+    if (user) {
+      const isAuthorized = user.role === 'Super Admin' || permissions.includes('products');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchProducts();
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   const fetchProducts = async () => {
     try {
@@ -118,8 +121,10 @@ export default function ProductsManagement() {
                         </div>
                         <div>
                           <p className="font-bold text-neutral-900 mb-0">{product.name}</p>
-                          <div className="flex items-center gap-1 text-xs text-neutral-500 mt-1">
-                            <Tag className="w-3 h-3" /> {product.category?.name || product.categoryName || 'Uncategorized'}
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500 mt-1">
+                            <span className="flex items-center gap-1"><Tag className="w-3 h-3" /> {product.category?.name || product.categoryName || 'Uncategorized'}</span>
+                            {product.store && <span className="bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded font-bold">Store: {product.store.name}</span>}
+                            {product.addedBy && <span className="text-neutral-400 font-medium">| By: {product.addedBy.name}</span>}
                           </div>
                         </div>
                       </div>

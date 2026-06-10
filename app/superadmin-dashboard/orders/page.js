@@ -7,18 +7,21 @@ import { useRouter } from 'next/navigation';
 import { Search, Filter, Eye, Download, FileText, Edit, Trash2 } from 'lucide-react';
 
 export default function OrdersManagement() {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && user.role !== 'Super Admin' && user.role !== 'Admin' && user.role !== 'Store Manager') {
-      router.push('/');
-    } else if (user) {
-      fetchOrders();
+    if (user) {
+      const isAuthorized = user.role === 'Super Admin' || permissions.includes('orders');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchOrders();
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   const fetchOrders = async () => {
     try {

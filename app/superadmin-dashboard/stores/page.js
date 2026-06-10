@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, Edit, Trash2, MapPin, Store, CheckCircle, XCircle, Save, X, Phone, Mail, User } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MapPin, Store, CheckCircle, XCircle, Save, X, Phone, Mail, User, Eye } from 'lucide-react';
 
 export default function StoresManagement() {
   const { user, permissions } = useAuth();
@@ -229,7 +229,11 @@ export default function StoresManagement() {
                         <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                           <Store className="w-6 h-6" />
                         </div>
-                        <div>
+                        <div 
+                          className="cursor-pointer hover:underline"
+                          onClick={() => router.push(`/store-panel?storeId=${store._id}`)}
+                          title="Open Store Panel"
+                        >
                           <p className="font-bold text-neutral-900 mb-0">{store.name}</p>
                           <p className="text-xs text-neutral-500 mt-1">ID: {store._id.substring(0, 8)}</p>
                         </div>
@@ -260,6 +264,13 @@ export default function StoresManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       {user?.role === 'Super Admin' ? (
                         <>
+                          <button 
+                            onClick={() => router.push(`/store-panel?storeId=${store._id}`)}
+                            className="p-2 text-neutral-400 hover:text-emerald-600 transition-colors rounded-lg hover:bg-emerald-50 mr-1" 
+                            title="Open Store Panel"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                           <button 
                             onClick={() => handleOpenEdit(store)}
                             className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1" 

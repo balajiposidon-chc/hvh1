@@ -6,11 +6,13 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { useCart } from '../../../context/CartContext';
+import { useAuth } from '../../../context/AuthContext';
 import CustomerLayout from '../../../components/CustomerLayout';
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const { addToCart } = useCart();
+  const { user } = useAuth() || {};
   const router = useRouter();
   const params = useParams();
 
@@ -47,6 +49,13 @@ export default function ProductDetailPage() {
                 <Star size={18} /> {product.rating} • {product.stockQuantity} in stock
               </div>
               <p className="mt-6 max-w-3xl text-base leading-8 text-charcoal/75">{product.description}</p>
+              {product.store && user?.role === 'Super Admin' && (
+                <div className="mt-6 p-6 rounded-3xl bg-amber-50/50 border border-amber-200/60 shadow-sm animate__animated animate__fadeIn">
+                  <p className="text-xs text-amber-600 font-extrabold uppercase tracking-wider mb-2">Store / Creator Info (Super Admin Only)</p>
+                  <p className="text-sm font-bold text-neutral-800 m-0">Store Name: <span className="font-semibold text-neutral-700">{product.store.name}</span></p>
+                  {product.addedBy && <p className="text-sm font-bold text-neutral-800 m-0 mt-1">Uploaded By: <span className="font-semibold text-neutral-700">{product.addedBy.name} ({product.addedBy.email})</span></p>}
+                </div>
+              )}
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 <div className="rounded-3xl bg-sand/60 p-6">
                   <p className="text-sm text-charcoal/70">Weight</p>

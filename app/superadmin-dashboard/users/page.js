@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Users, Plus, Edit2, Trash2, Search, UserCheck, ShieldAlert, Save } from 'lucide-react';
 
 export default function UserAccountsManager() {
-  const { user: currentSuperAdmin } = useAuth();
+  const { user: currentSuperAdmin, permissions = [] } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -28,12 +28,15 @@ export default function UserAccountsManager() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (currentSuperAdmin && currentSuperAdmin.role !== 'Super Admin') {
-      router.push('/');
-    } else if (currentSuperAdmin) {
-      fetchUsersAndRoles();
+    if (currentSuperAdmin) {
+      const isAuthorized = currentSuperAdmin.role === 'Super Admin' || permissions.includes('users');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchUsersAndRoles();
+      }
     }
-  }, [currentSuperAdmin, router]);
+  }, [currentSuperAdmin, permissions, router]);
 
   const fetchUsersAndRoles = async () => {
     try {

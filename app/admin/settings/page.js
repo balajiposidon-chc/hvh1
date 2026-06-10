@@ -7,7 +7,9 @@ import { getServerSession } from 'next-auth';
 export default async function AdminSettingsPage() {
     const session = await getServerSession(authOptions);
     const role = session?.user?.role?.toLowerCase();
-    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
+    const permissions = session?.user?.permissions || [];
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+    if (!isSuperAdmin && !permissions.includes('settings')) {
         return <div className="p-12 text-center">Access denied</div>;
     }
     await connectToDatabase();

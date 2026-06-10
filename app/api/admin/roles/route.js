@@ -8,10 +8,12 @@ import Role from '@/models/Role';
 async function checkAuth() {
   const session = await getServerSession(authOptions);
   const role = session?.user?.role?.toLowerCase();
-  if (!role || !['super admin', 'superadmin'].includes(role)) {
-    return false;
+  const permissions = session?.user?.permissions || [];
+  const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+  if (isSuperAdmin || permissions.includes('rbac')) {
+    return true;
   }
-  return true;
+  return false;
 }
 
 export async function GET(request) {

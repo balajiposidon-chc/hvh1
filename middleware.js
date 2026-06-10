@@ -19,17 +19,21 @@ export async function middleware(request) {
       return NextResponse.next();
     }
     const role = token.role?.toLowerCase();
+    const permissions = token.permissions || [];
     if (role === 'customer') {
       return NextResponse.redirect(new URL('/', url));
     }
     if (role === 'super admin' || role === 'superadmin') {
       return NextResponse.redirect(new URL('/superadmin-dashboard', url));
     }
-    if (role === 'admin' || role === 'store manager' || role === 'manager') {
+    if (permissions.includes('dashboard')) {
       return NextResponse.redirect(new URL('/admin', url));
     }
-    if (role === 'accountant') {
+    if (permissions.includes('accounting')) {
       return NextResponse.redirect(new URL('/superadmin-dashboard/accounting', url));
+    }
+    if (permissions.includes('store-panel')) {
+      return NextResponse.redirect(new URL('/store-panel', url));
     }
     return NextResponse.redirect(new URL('/', url));
   }
@@ -37,25 +41,50 @@ export async function middleware(request) {
   // Path permissions mapping
   const currentPath = nextUrl.pathname;
   
+  const permissions = token?.permissions || [];
+  const role = token?.role?.toLowerCase() || '';
+
   // 1. Super Admin section
   if (currentPath.startsWith('/superadmin-dashboard')) {
     if (!hasVerifiedToken) {
       return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(currentPath)}`, url));
     }
     
-    // Accountant is allowed only on the accounting path
-    if (token.role === 'Accountant' && currentPath.startsWith('/superadmin-dashboard/accounting')) {
+    // Check permission-based sub-paths
+    if (currentPath.startsWith('/superadmin-dashboard/accounting') && permissions.includes('accounting')) {
       return NextResponse.next();
     }
     
-    // Admin & Store Manager are allowed on products/orders paths under superadmin-dashboard
-    if (['Admin', 'Store Manager'].includes(token.role) && 
-        (currentPath.startsWith('/superadmin-dashboard/products') || currentPath.startsWith('/superadmin-dashboard/orders'))) {
+    if (currentPath.startsWith('/superadmin-dashboard/products') && permissions.includes('products')) {
       return NextResponse.next();
     }
     
-    // Otherwise, only Super Admin is allowed
-    if (token.role !== 'Super Admin') {
+    if (currentPath.startsWith('/superadmin-dashboard/orders') && permissions.includes('orders')) {
+      return NextResponse.next();
+    }
+
+    if (currentPath.startsWith('/superadmin-dashboard/users') && permissions.includes('users')) {
+      return NextResponse.next();
+    }
+
+    if (currentPath.startsWith('/superadmin-dashboard/stores') && permissions.includes('stores')) {
+      return NextResponse.next();
+    }
+
+    if (currentPath.startsWith('/superadmin-dashboard/roles') && permissions.includes('rbac')) {
+      return NextResponse.next();
+    }
+
+    if (currentPath.startsWith('/superadmin-dashboard/audit') && permissions.includes('audit')) {
+      return NextResponse.next();
+    }
+
+    if (currentPath.startsWith('/superadmin-dashboard/settings') && permissions.includes('settings')) {
+      return NextResponse.next();
+    }
+    
+    // Otherwise, only Super Admin or users with 'rbac' or 'audit' permission are allowed
+    if (role !== 'super admin' && role !== 'superadmin' && !permissions.includes('rbac') && !permissions.includes('audit')) {
       return NextResponse.redirect(new URL('/unauthorized', url));
     }
   }
@@ -66,14 +95,42 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(currentPath)}`, url));
     }
     
-    // Super Admin, Admin, and Store Manager are allowed
-    const allowed = ['Super Admin', 'Admin', 'Store Manager'];
-    if (!allowed.includes(token.role)) {
+    // Super Admins bypass checks
+    if (role === 'super admin' || role === 'superadmin') {
+      return NextResponse.next();
+    }
+
+    // Check specific sub-path permissions
+    if (currentPath.startsWith('/admin/products') && !permissions.includes('products')) {
+      return NextResponse.redirect(new URL('/unauthorized', url));
+    }
+    if (currentPath.startsWith('/admin/orders') && !permissions.includes('orders')) {
+      return NextResponse.redirect(new URL('/unauthorized', url));
+    }
+    if (currentPath.startsWith('/admin/users') && !permissions.includes('users')) {
+      return NextResponse.redirect(new URL('/unauthorized', url));
+    }
+    if (currentPath.startsWith('/admin/settings') && !permissions.includes('settings')) {
+      return NextResponse.redirect(new URL('/unauthorized', url));
+    }
+
+    // Fallback dashboard access check
+    if (!permissions.includes('dashboard') && permissions.length === 0) {
       return NextResponse.redirect(new URL('/unauthorized', url));
     }
   }
 
-  // 3. Profile section
+  // 3. Store Panel section
+  if (currentPath.startsWith('/store-panel')) {
+    if (!hasVerifiedToken) {
+      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(currentPath)}`, url));
+    }
+    if (role !== 'super admin' && role !== 'superadmin' && !permissions.includes('store-panel')) {
+      return NextResponse.redirect(new URL('/unauthorized', url));
+    }
+  }
+
+  // 4. Profile section
   if (currentPath.startsWith('/profile')) {
     if (!hasVerifiedToken) {
       return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(currentPath)}`, url));
@@ -97,6 +154,7 @@ export const config = {
   matcher: [
     '/superadmin-dashboard/:path*',
     '/admin/:path*',
+    '/store-panel/:path*',
     '/profile/:path*',
     '/checkout/:path*',
     '/login',

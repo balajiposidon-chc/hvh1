@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
@@ -21,8 +23,25 @@ export async function GET(req) {
       query.name = { $regex: keyword, $options: 'i' };
     }
 
-    const products = await Product.find(query).populate('category', 'name');
-    return NextResponse.json({ success: true, count: products.length, products });
+    const products = await Product.find(query)
+      .populate('category', 'name')
+      .populate('store', 'name')
+      .populate('addedBy', 'name email');
+
+    const session = await getServerSession(authOptions);
+    const role = session?.user?.role?.toLowerCase();
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+
+    const processedProducts = products.map(p => {
+      const obj = p.toObject();
+      if (!isSuperAdmin) {
+        delete obj.addedBy;
+        delete obj.store;
+      }
+      return obj;
+    });
+
+    return NextResponse.json({ success: true, count: processedProducts.length, products: processedProducts });
   } catch (error) {
     console.error('Fetch products error:', error);
     return NextResponse.json({ message: 'Server Error' }, { status: 500 });

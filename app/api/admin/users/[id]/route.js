@@ -3,26 +3,32 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/lib/models/User';
+
 export async function PUT(request, { params }) {
     const session = await getServerSession(authOptions);
     const loggedInRole = session?.user?.role;
     const role = loggedInRole?.toLowerCase();
-    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
+    const permissions = session?.user?.permissions || [];
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+    
+    if (!isSuperAdmin && !permissions.includes('users')) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
     }
+
     const body = await request.json();
     await connectToDatabase();
     const user = await User.findById(params.id);
     if (!user) {
         return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
-    const isSuperAdmin = loggedInRole === 'Super Admin';
+
     if (user.role === 'Super Admin' && !isSuperAdmin) {
         return NextResponse.json({ message: 'Only a Super Admin can modify a Super Admin account' }, { status: 403 });
     }
     if (body.role === 'Super Admin' && !isSuperAdmin) {
         return NextResponse.json({ message: 'Only a Super Admin can assign the Super Admin role' }, { status: 403 });
     }
+
     if (body.role)
         user.role = body.role;
     if (body.status)
@@ -30,13 +36,18 @@ export async function PUT(request, { params }) {
     await user.save();
     return NextResponse.json({ message: 'User updated' });
 }
+
 export async function DELETE(request, { params }) {
     const session = await getServerSession(authOptions);
     const loggedInRole = session?.user?.role;
     const role = loggedInRole?.toLowerCase();
-    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
+    const permissions = session?.user?.permissions || [];
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+    
+    if (!isSuperAdmin && !permissions.includes('users')) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
     }
+
     await connectToDatabase();
     const user = await User.findById(params.id);
     if (!user) {
@@ -45,10 +56,11 @@ export async function DELETE(request, { params }) {
     if (user.email === 'admin@store.com') {
         return NextResponse.json({ message: 'Main admin cannot be deleted' }, { status: 403 });
     }
-    const isSuperAdmin = loggedInRole === 'Super Admin';
+
     if (user.role === 'Super Admin' && !isSuperAdmin) {
         return NextResponse.json({ message: 'Only a Super Admin can delete a Super Admin account' }, { status: 403 });
     }
+
     await user.deleteOne();
     return NextResponse.json({ message: 'User deleted' });
 }

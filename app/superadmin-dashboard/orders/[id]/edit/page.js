@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ShoppingBag, ArrowLeft, Save } from 'lucide-react';
 
 export default function SuperAdminOrderEditPage({ params }) {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
@@ -27,12 +27,15 @@ export default function SuperAdminOrderEditPage({ params }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (user && user.role !== 'Super Admin' && user.role !== 'Admin' && user.role !== 'Store Manager') {
-      router.push('/');
-    } else if (user) {
-      fetchOrder();
+    if (user) {
+      const isAuthorized = user.role === 'Super Admin' || permissions.includes('orders');
+      if (!isAuthorized) {
+        router.push('/');
+      } else {
+        fetchOrder();
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   const fetchOrder = async () => {
     try {

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { motion } from 'framer-motion';
-import { Download, Plus, IndianRupee, ShoppingCart, Users, AlertTriangle, ArrowUp, Eye, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, Bell, IndianRupee, ShoppingCart, Users, AlertTriangle, ArrowUp, Eye, Trash2 } from 'lucide-react';
 
 const dummyData = [
   { name: 'Jan', sales: 4000, revenue: 2400 },
@@ -18,17 +18,49 @@ const dummyData = [
 ];
 
 export default function SuperAdminDashboard() {
-  const { user } = useAuth();
+  const { user, permissions = [] } = useAuth();
   const router = useRouter();
 
   // Basic client-side protection fallback (Middleware handles true protection)
   useEffect(() => {
-    if (user && user.role !== 'Super Admin') {
-      router.push('/');
+    if (user) {
+      const isSuper = user.role === 'Super Admin' || permissions.includes('rbac');
+      if (!isSuper) {
+        router.push('/');
+      }
     }
-  }, [user, router]);
+  }, [user, permissions, router]);
 
   if (!user) return null;
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Low Stock Warning', message: 'Saffron Spice (SKU: HV-SPICE) is below 5 units in central stock.', type: 'warning', time: '10 mins ago', read: false },
+    { id: 2, title: 'Database Check Passed', message: 'Orphaned reference check passed with 0 conflicts.', type: 'success', time: '1 hour ago', read: false },
+    { id: 3, title: 'New Store Active', message: 'Bangalore franchise panel has been initialized.', type: 'info', time: '3 hours ago', read: false },
+  ]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const handleExport = () => {
+    const headers = ["Order ID", "Customer", "Email", "Date", "Status", "Amount"];
+    const rows = [
+      ["#ORD-2026-104", "Customer 1", "customer1@email.com", "May 1, 2026", "Processing", "₹1999"],
+      ["#ORD-2026-204", "Customer 2", "customer2@email.com", "May 1, 2026", "Delivered", "₹3499"],
+      ["#ORD-2026-304", "Customer 3", "customer3@email.com", "May 1, 2026", "Processing", "₹4999"],
+      ["#ORD-2026-404", "Customer 4", "customer4@email.com", "May 1, 2026", "Delivered", "₹6499"],
+      ["#ORD-2026-504", "Customer 5", "customer5@email.com", "May 1, 2026", "Processing", "₹7999"],
+    ];
+    
+    let csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `dashboard_orders_export_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -46,13 +78,73 @@ export default function SuperAdminDashboard() {
           <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Overview Dashboard</h2>
           <p className="text-neutral-500 font-medium">Welcome back, {user.name}</p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border-2 border-neutral-200 text-neutral-700 font-bold hover:bg-neutral-50 transition-colors">
+        <div className="flex gap-3 w-full md:w-auto relative">
+          <button 
+            onClick={handleExport}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border-2 border-neutral-200 text-neutral-700 font-bold hover:bg-neutral-50 transition-colors cursor-pointer bg-white"
+          >
             <Download className="w-4 h-4" /> Export
           </button>
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all">
-            <Plus className="w-4 h-4" /> Add Product
-          </button>
+          
+          <div className="relative flex-1 md:flex-none">
+            <button 
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all cursor-pointer border-0"
+            >
+              <Bell className="w-4 h-4" />
+              <span>Notifications</span>
+              {notifications.filter(n => !n.read).length > 0 && (
+                <span className="bg-white text-primary text-xs font-black rounded-full px-1.5 py-0.5 ml-1">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
+            </button>
+            
+            <AnimatePresence>
+              {notificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-neutral-100 py-3 z-50 overflow-hidden"
+                >
+                  <div className="px-4 py-2 border-b border-neutral-100 flex justify-between items-center bg-white">
+                    <span className="font-bold text-neutral-800 text-sm">System Notifications</span>
+                    <button 
+                      onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                      className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors border-0 bg-transparent cursor-pointer"
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+                  
+                  <div className="divide-y divide-neutral-50 max-h-60 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="px-4 py-6 text-center text-xs text-neutral-400">No notifications found.</p>
+                    ) : (
+                      notifications.map(n => (
+                        <div 
+                          key={n.id} 
+                          className={`p-3 hover:bg-neutral-50/50 transition-colors flex gap-2.5 items-start ${!n.read ? 'bg-neutral-50/20' : ''}`}
+                        >
+                          <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                            n.type === 'warning' ? 'bg-amber-500' : n.type === 'success' ? 'bg-emerald-500' : 'bg-blue-500'
+                          }`} />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <p className={`text-xs font-bold text-neutral-800 leading-tight m-0 ${!n.read ? 'font-extrabold' : ''}`}>{n.title}</p>
+                              <span className="text-[10px] text-neutral-400 font-medium">{n.time}</span>
+                            </div>
+                            <p className="text-[11px] text-neutral-500 mt-1 mb-0 leading-normal">{n.message}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

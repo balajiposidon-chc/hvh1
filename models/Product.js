@@ -18,6 +18,8 @@ const ProductSchema = new mongoose.Schema({
   isFeatured: { type: Boolean, default: false },
   featured: { type: Boolean, default: false },
   status: { type: String, default: 'Active' },
+  store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
+  addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   reviews: [{
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     rating: { type: Number, required: true },

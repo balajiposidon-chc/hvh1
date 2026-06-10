@@ -15,11 +15,11 @@ export function AuthProvider({ children }) {
   const getDefaultPermissions = (roleName) => {
     const r = roleName ? roleName.toLowerCase() : '';
     if (r === 'super admin' || r === 'superadmin') {
-      return ['dashboard', 'products', 'orders', 'stores', 'accounting', 'users', 'settings', 'rbac'];
+      return ['dashboard', 'products', 'orders', 'stores', 'accounting', 'users', 'settings', 'rbac', 'audit', 'store-panel'];
     } else if (r === 'admin') {
       return ['dashboard', 'products', 'orders', 'users', 'settings'];
     } else if (r === 'store manager' || r === 'manager') {
-      return ['dashboard', 'products', 'orders'];
+      return ['dashboard', 'products', 'orders', 'store-panel'];
     } else if (r === 'accountant') {
       return ['accounting'];
     }
@@ -29,19 +29,24 @@ export function AuthProvider({ children }) {
   const fetchPermissions = async (roleName) => {
     if (!roleName) {
       setPermissions([]);
-      return;
+      return [];
     }
     try {
       const res = await fetch(`/api/auth/permissions?role=${encodeURIComponent(roleName)}`);
       const data = await res.json();
       if (data.success) {
         setPermissions(data.permissions);
+        return data.permissions;
       } else {
-        setPermissions(getDefaultPermissions(roleName));
+        const defaults = getDefaultPermissions(roleName);
+        setPermissions(defaults);
+        return defaults;
       }
     } catch (err) {
       console.error("Failed to fetch permissions:", err);
-      setPermissions(getDefaultPermissions(roleName));
+      const defaults = getDefaultPermissions(roleName);
+      setPermissions(defaults);
+      return defaults;
     }
   };
 
@@ -80,15 +85,19 @@ export function AuthProvider({ children }) {
         setUser(u);
         await fetchPermissions(u.role);
         
-        // Redirect based on role
-        if (u.role === 'Customer') {
+        // Redirect based on permissions/role
+        const roleLower = u.role?.toLowerCase();
+        const userPerms = await fetchPermissions(u.role);
+        if (roleLower === 'customer') {
           router.push('/');
-        } else if (u.role === 'Super Admin') {
+        } else if (roleLower === 'super admin' || roleLower === 'superadmin') {
           router.push('/superadmin-dashboard');
-        } else if (u.role === 'Admin' || u.role === 'Store Manager') {
+        } else if (userPerms.includes('dashboard')) {
           router.push('/admin');
-        } else if (u.role === 'Accountant') {
+        } else if (userPerms.includes('accounting')) {
           router.push('/superadmin-dashboard/accounting');
+        } else if (userPerms.includes('store-panel')) {
+          router.push('/store-panel');
         } else {
           router.push('/');
         }

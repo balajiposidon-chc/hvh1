@@ -14,7 +14,9 @@ function CountCard({ label, value }) {
 export default async function AdminDashboardPage() {
     const session = await getServerSession(authOptions);
     const role = session?.user?.role?.toLowerCase();
-    if (!role || !['admin', 'manager', 'store manager', 'super admin', 'superadmin'].includes(role)) {
+    const permissions = session?.user?.permissions || [];
+    const isSuperAdmin = role === 'super admin' || role === 'superadmin';
+    if (!isSuperAdmin && !permissions.includes('dashboard')) {
         return <div className="p-12 text-center">Access denied</div>;
     }
     await connectToDatabase();
