@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Eye, Download, FileText, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Download, FileText, Edit, Trash2, Printer } from 'lucide-react';
 
 export default function OrdersManagement() {
   const { user, permissions = [] } = useAuth();
@@ -37,9 +37,14 @@ export default function OrdersManagement() {
     }
   };
 
-  const handleDownloadInvoice = (orderId) => {
-    // Generate PDF logic would go here
-    alert(`Downloading invoice for order ${orderId}`);
+  const handleDownloadInvoice = async (order) => {
+    const { downloadInvoicePDF } = await import('@/utils/invoice');
+    await downloadInvoicePDF(order);
+  };
+
+  const handlePrintInvoice = async (order) => {
+    const { printInvoiceHTML } = await import('@/utils/invoice');
+    printInvoiceHTML(order);
   };
 
   const handleDeleteOrder = async (id) => {
@@ -154,11 +159,18 @@ export default function OrdersManagement() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => handleDownloadInvoice(order._id)}
+                        onClick={() => handleDownloadInvoice(order)}
                         className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
-                        title="Download Invoice"
+                        title="Download PDF Invoice"
                       >
-                        <FileText className="w-4 h-4" />
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handlePrintInvoice(order)}
+                        className="p-2 text-neutral-400 hover:text-emerald-600 transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
+                        title="Print Invoice"
+                      >
+                        <Printer className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteOrder(order._id)}

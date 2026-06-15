@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShoppingBag, Eye, Calendar, User, RefreshCw, X } from 'lucide-react';
+import { ShoppingBag, Eye, Calendar, User, RefreshCw, X, Download, Printer } from 'lucide-react';
 
 function StoreOrdersManagementContent() {
   const { user, permissions = [] } = useAuth();
@@ -216,9 +216,32 @@ function StoreOrdersManagementContent() {
                 </ul>
               </div>
 
-              <div className="border-t border-neutral-100 pt-4 flex justify-between items-center">
-                <span className="font-extrabold text-neutral-900">Total Price</span>
-                <span className="font-extrabold text-xl text-primary">₹{(selectedOrder.totalPrice || selectedOrder.total || 0).toLocaleString()}</span>
+              <div className="border-t border-neutral-100 pt-4">
+                <div className="flex justify-between items-center mb-6">
+                  <span className="font-extrabold text-neutral-900">Total Price</span>
+                  <span className="font-extrabold text-xl text-primary">₹{(selectedOrder.totalPrice || selectedOrder.total || 0).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={async () => {
+                      const { downloadInvoicePDF } = await import('@/utils/invoice');
+                      await downloadInvoicePDF(selectedOrder);
+                    }}
+                    className="flex-1 py-3 px-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
+                  >
+                    <Download className="w-4 h-4" /> PDF Invoice
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const { printInvoiceHTML } = await import('@/utils/invoice');
+                      printInvoiceHTML(selectedOrder);
+                    }}
+                    className="flex-1 py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-neutral-200"
+                  >
+                    <Printer className="w-4 h-4" /> Print Invoice
+                  </button>
+                </div>
               </div>
             </div>
           </div>
