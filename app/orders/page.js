@@ -4,6 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
+
 export default async function OrdersPage() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -40,7 +41,7 @@ export default async function OrdersPage() {
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Total</p>
-                      <p className="mt-1 text-slate-900">${order.total.toFixed(2)}</p>
+                      <p className="mt-1 text-slate-900">${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>)))}

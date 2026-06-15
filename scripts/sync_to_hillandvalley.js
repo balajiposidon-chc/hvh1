@@ -57,7 +57,11 @@ const filesToSync = [
   'app/store-panel/settings/page.js',
   'app/api/store-panel/stats/route.js',
   'app/api/store-panel/products/route.js',
-  'app/api/store-panel/orders/route.js'
+  'app/api/store-panel/orders/route.js',
+  'app/orders/page.js',
+  'app/api/dashboard/route.js',
+  'app/profile/page.js',
+  'components/AnalyticsPanel.js'
 ];
 
 filesToSync.forEach(relPath => {

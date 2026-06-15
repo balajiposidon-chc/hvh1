@@ -31,7 +31,7 @@ export default async function AdminOrdersPage() {
           <tbody className="divide-y divide-slate-200 bg-white">
             {orders.map((order) => (<tr key={order._id.toString()} className="hover:bg-slate-50">
                 <td className="px-6 py-4 text-slate-900">#{order._id.toString().slice(-6)}</td>
-                <td className="px-6 py-4 text-slate-900">${order.total.toFixed(2)}</td>
+                <td className="px-6 py-4 text-slate-900">${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</td>
                 <td className="px-6 py-4 text-slate-900">{order.status}</td>
                 <td className="px-6 py-4 text-slate-900">{new Date(order.createdAt).toLocaleDateString()}</td>
               </tr>))}

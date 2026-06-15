@@ -57,7 +57,7 @@ export default function AnalyticsPanel() {
             {stats.recentOrders.map((order) => (
               <div key={order._id} className="rounded-3xl bg-sand/60 p-4">
                 <p className="text-sm font-semibold text-charcoal">Order #{order._id.slice(-6)}</p>
-                <p className="text-sm text-charcoal/70">Status: {order.status} • ₹{order.total}</p>
+                <p className="text-sm text-charcoal/70">Status: {order.status} • ₹{order.totalPrice ?? order.total ?? 0}</p>
               </div>
             ))}
           </div>

@@ -16,7 +16,7 @@ export async function GET() {
   const stores = await Store.find();
   const invoices = await Invoice.find();
 
-  const totalSales = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const totalSales = orders.reduce((sum, order) => sum + (order.totalPrice || order.total || 0), 0);
   const revenue = invoices.reduce((sum, invoice) => sum + (invoice.amount || 0), 0);
   const lowStock = products.filter((item) => item.stockQuantity < 10).length;
 

@@ -106,7 +106,7 @@ export default async function ProfilePage() {
                           <p className="text-muted small mb-1">
                             Order Placed: <strong className="text-dark">{new Date(order.createdAt).toLocaleDateString()}</strong>
                           </p>
-                          <h6 className="fw-bold text-dark mb-0">Total Paid: <span className="text-cherry">₹{order.total.toFixed(2)}</span></h6>
+                          <h6 className="fw-bold text-dark mb-0">Total Paid: <span className="text-cherry">₹{(order.totalPrice ?? order.total ?? 0).toFixed(2)}</span></h6>
                           <small className="text-muted">{order.items?.length || 0} items purchased</small>
                         </div>
                         <div>

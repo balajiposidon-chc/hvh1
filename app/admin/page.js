@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
     const totalProducts = await Product.countDocuments();
     const orders = await Order.find().lean();
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total ?? 0), 0);
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice ?? order.total ?? 0), 0);
     const recentOrders = orders.slice(0, 5);
     return (<AdminLayout>
       <div className="grid gap-6 xl:grid-cols-4">
@@ -46,7 +46,7 @@ export default async function AdminDashboardPage() {
                 <p className="font-semibold text-slate-900">Order #{order._id.toString().slice(-6)}</p>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">{order.status}</span>
               </div>
-              <p className="mt-2 text-sm text-slate-600">Total: ${order.total.toFixed(2)}</p>
+              <p className="mt-2 text-sm text-slate-600">Total: ${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</p>
             </div>))}
         </div>
       </div>
