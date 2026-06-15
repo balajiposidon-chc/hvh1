@@ -6,8 +6,26 @@
  * Opens a print dialog with a beautifully formatted HTML invoice.
  * @param {Object} order - The order document object.
  */
-export function printInvoiceHTML(order) {
+export async function printInvoiceHTML(order) {
   if (!order) return;
+
+  let defaultStoreName = 'Hill & Valley Spices Head Office';
+  let defaultAddress = 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
+  let defaultPhone = '+91 94471 23456';
+  let defaultEmail = 'info@hillandvalley.com';
+
+  try {
+    const res = await fetch('/api/settings');
+    const data = await res.json();
+    if (data.success && data.settings) {
+      defaultStoreName = data.settings.storeName || defaultStoreName;
+      defaultAddress = data.settings.address || defaultAddress;
+      defaultPhone = data.settings.phone || defaultPhone;
+      defaultEmail = data.settings.email || defaultEmail;
+    }
+  } catch (err) {
+    console.error("Failed to fetch settings, using default fallback", err);
+  }
 
   const orderId = order._id ? order._id.toString().toUpperCase() : 'N/A';
   const orderShortId = orderId.length > 6 ? orderId.slice(-6) : orderId;
@@ -25,10 +43,10 @@ export function printInvoiceHTML(order) {
 
   // Seller Details
   const store = order.store || {};
-  const sellerName = store.name || 'Hill & Valley Spices Head Office';
-  const sellerAddress = store.location || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
-  const sellerPhone = store.contactNumber || '+91 94471 23456';
-  const sellerEmail = store.email || 'info@hillandvalley.com';
+  const sellerName = store.name || defaultStoreName;
+  const sellerAddress = store.location || defaultAddress;
+  const sellerPhone = store.contactNumber || defaultPhone;
+  const sellerEmail = store.email || defaultEmail;
 
   const itemsHTML = (order.orderItems || []).map(item => `
     <tr>
@@ -304,12 +322,30 @@ export async function downloadInvoicePDF(order) {
     const orderShortId = orderId.length > 6 ? orderId.slice(-6) : orderId;
     const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
 
+    let defaultStoreName = 'Hill & Valley Spices Head Office';
+    let defaultAddress = 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
+    let defaultPhone = '+91 94471 23456';
+    let defaultEmail = 'info@hillandvalley.com';
+
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      if (data.success && data.settings) {
+        defaultStoreName = data.settings.storeName || defaultStoreName;
+        defaultAddress = data.settings.address || defaultAddress;
+        defaultPhone = data.settings.phone || defaultPhone;
+        defaultEmail = data.settings.email || defaultEmail;
+      }
+    } catch (err) {
+      console.error("Failed to fetch settings, using default fallback", err);
+    }
+
     // Seller Details
     const store = order.store || {};
-    const sellerName = store.name || 'Hill & Valley Spices Head Office';
-    const sellerAddress = store.location || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
-    const sellerPhone = store.contactNumber || '+91 94471 23456';
-    const sellerEmail = store.email || 'info@hillandvalley.com';
+    const sellerName = store.name || defaultStoreName;
+    const sellerAddress = store.location || defaultAddress;
+    const sellerPhone = store.contactNumber || defaultPhone;
+    const sellerEmail = store.email || defaultEmail;
     
     // Theme Colors
     const primaryColor = [185, 28, 28]; // Cherry Red (#b91c1c)

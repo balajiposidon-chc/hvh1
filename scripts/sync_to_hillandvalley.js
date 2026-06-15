@@ -17,6 +17,7 @@ const filesToSync = [
   'app/api/admin/products/route.js',
   'app/api/admin/products/[id]/route.js',
   'app/api/admin/settings/route.js',
+  'app/api/settings/route.js',
   'app/api/admin/users/route.js',
   'app/api/admin/users/[id]/route.js',
   'app/api/admin/roles/route.js',

@@ -16,7 +16,7 @@ export default function OrderActions({ order }) {
   const handlePrint = async () => {
     try {
       const { printInvoiceHTML } = await import('@/utils/invoice');
-      printInvoiceHTML(order);
+      await printInvoiceHTML(order);
     } catch (err) {
       console.error(err);
       alert("Failed to print invoice");

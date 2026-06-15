@@ -235,7 +235,7 @@ function StoreOrdersManagementContent() {
                   <button
                     onClick={async () => {
                       const { printInvoiceHTML } = await import('@/utils/invoice');
-                      printInvoiceHTML(selectedOrder);
+                      await printInvoiceHTML(selectedOrder);
                     }}
                     className="flex-1 py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm border border-neutral-200"
                   >

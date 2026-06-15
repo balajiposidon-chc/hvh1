@@ -44,7 +44,7 @@ export default function OrdersManagement() {
 
   const handlePrintInvoice = async (order) => {
     const { printInvoiceHTML } = await import('@/utils/invoice');
-    printInvoiceHTML(order);
+    await printInvoiceHTML(order);
   };
 
   const handleDeleteOrder = async (id) => {
