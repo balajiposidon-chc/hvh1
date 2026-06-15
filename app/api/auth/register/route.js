@@ -12,6 +12,18 @@ export async function POST(request) {
         if (existing) {
             return NextResponse.json({ message: 'Email is already registered' }, { status: 400 });
         }
+        if (parsed.name) {
+            const nameExists = await User.findOne({ name: { $regex: new RegExp("^" + parsed.name.trim() + "$", "i") } });
+            if (nameExists) {
+                return NextResponse.json({ message: 'Username is already taken' }, { status: 400 });
+            }
+        }
+        if (parsed.phone && parsed.phone.trim() !== '') {
+            const phoneExists = await User.findOne({ phone: parsed.phone.trim() });
+            if (phoneExists) {
+                return NextResponse.json({ message: 'Phone number is already registered' }, { status: 400 });
+            }
+        }
         const hashed = await bcryptjs.hash(parsed.password, 10);
         const user = new User({
             name: parsed.name,

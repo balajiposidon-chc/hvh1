@@ -63,7 +63,9 @@ const filesToSync = [
   'app/profile/page.js',
   'components/AnalyticsPanel.js',
   'components/OrderActions.js',
-  'utils/invoice.js'
+  'utils/invoice.js',
+  'app/api/auth/register/route.js',
+  'app/api/admin/dashboard-stats/route.js'
 ];
 
 filesToSync.forEach(relPath => {

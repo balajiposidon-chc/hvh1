@@ -21,8 +21,26 @@ export async function GET(request) {
   }
   await connectToDatabase();
   try {
-    const users = await User.find().sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, users });
+    const session = await getServerSession(authOptions);
+    const loggedInUser = session?.user;
+    const roleCheck = loggedInUser?.role?.toLowerCase();
+    const isSuperAdmin = roleCheck === 'super admin' || roleCheck === 'superadmin';
+
+    const users = await User.find().sort({ createdAt: -1 }).lean();
+
+    const sanitizedUsers = users.map(u => {
+      const isSelf = String(u._id) === String(loggedInUser?.id || loggedInUser?._id);
+      if (isSuperAdmin || isSelf) {
+        return u;
+      }
+      return {
+        ...u,
+        email: '[HIDDEN]',
+        phone: u.phone ? '[HIDDEN]' : undefined
+      };
+    });
+
+    return NextResponse.json({ success: true, users: sanitizedUsers });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -38,7 +56,7 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
   const body = await request.json();
-  const { name, email, password, role, status } = body;
+  const { name, email, password, role, status, phone } = body;
   
   if (!name || !email || !password) {
     return NextResponse.json({ success: false, message: 'Name, email, and password are required' }, { status: 400 });
@@ -54,11 +72,26 @@ export async function POST(request) {
     if (existing) {
       return NextResponse.json({ success: false, message: 'User email already exists' }, { status: 400 });
     }
+
+    if (name) {
+      const nameExists = await User.findOne({ name: { $regex: new RegExp("^" + name.trim() + "$", "i") } });
+      if (nameExists) {
+        return NextResponse.json({ success: false, message: 'Username is already taken' }, { status: 400 });
+      }
+    }
+
+    if (phone && phone.trim() !== '') {
+      const phoneExists = await User.findOne({ phone: phone.trim() });
+      if (phoneExists) {
+        return NextResponse.json({ success: false, message: 'Phone number is already registered' }, { status: 400 });
+      }
+    }
     
     const newUser = new User({
       name,
       email: email.toLowerCase(),
       password,
+      phone: phone || '',
       role: role || 'Customer',
       status: status || 'active'
     });
