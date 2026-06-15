@@ -56,6 +56,7 @@ export async function PUT(request, { params }) {
         images: body.images || [],
         status: body.status || 'active',
         featured: body.featured || false,
+        hsnCode: body.hsnCode,
     };
 
     // If Super Admin specifies a store, allow changing it

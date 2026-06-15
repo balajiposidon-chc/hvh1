@@ -55,6 +55,7 @@ export async function POST(request) {
         featured: body.featured || false,
         store: storeId,
         addedBy: session.user.id || session.user._id,
+        hsnCode: body.hsnCode || '',
     });
     await product.save();
     return NextResponse.json({ message: 'Created product', id: product._id.toString() }, { status: 201 });

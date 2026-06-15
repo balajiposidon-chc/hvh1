@@ -35,6 +35,7 @@ export default async function AdminProductsEditPage({ params }) {
             images: product.images.join(', '),
             status: product.status,
             featured: product.featured,
+            hsnCode: product.hsnCode || '',
         }}/>
     </AdminLayout>);
 }

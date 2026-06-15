@@ -17,10 +17,10 @@ export async function GET(request) {
         let orders;
         if (['super admin', 'superadmin', 'admin', 'manager', 'store manager'].includes(role)) {
             // Admin sees all orders
-            orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 }).lean();
+            orders = await Order.find().populate('user', 'name email').populate('store').sort({ createdAt: -1 }).lean();
         } else {
             // Customer sees only their own orders
-            orders = await Order.find({ user: session.user.id }).sort({ createdAt: -1 }).lean();
+            orders = await Order.find({ user: session.user.id }).populate('store').sort({ createdAt: -1 }).lean();
         }
         
         // Map fields to match client-side expectation if needed (like totalPrice -> total, etc.)
@@ -76,17 +76,33 @@ export async function POST(request) {
             };
         }
 
-        const orderItems = items.map((item) => ({
-            product: item.id || item.productId,
-            name: item.name,
-            price: Number(item.price),
-            quantity: Number(item.quantity),
-            image: item.image || '',
-            unit: item.unit || 'piece'
-        }));
+        const orderItems = [];
+        for (const item of items) {
+            const pId = item.id || item.productId;
+            const dbProduct = await Product.findById(pId);
+            orderItems.push({
+                product: pId,
+                name: item.name,
+                price: Number(item.price),
+                quantity: Number(item.quantity),
+                image: item.image || '',
+                unit: item.unit || 'piece',
+                hsnCode: dbProduct?.hsnCode || ''
+            });
+        }
+
+        // Resolve store from the first product
+        let orderStoreId = null;
+        if (orderItems.length > 0 && orderItems[0].product) {
+            const firstProduct = await Product.findById(orderItems[0].product);
+            if (firstProduct && firstProduct.store) {
+                orderStoreId = firstProduct.store;
+            }
+        }
 
         const order = new Order({
             user: session.user.id,
+            store: orderStoreId,
             orderItems: orderItems,
             shippingAddress: parsedAddress,
             phone,

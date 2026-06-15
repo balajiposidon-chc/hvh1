@@ -47,6 +47,7 @@ export default async function SuperAdminProductsEditPage({ params }) {
                 images: product.images ? product.images.join(', ') : '',
                 status: product.status || 'active',
                 featured: product.featured || false,
+                hsnCode: product.hsnCode || '',
             }}/>
         </div>
       </AdminLayout>

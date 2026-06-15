@@ -60,6 +60,7 @@ export default async function StoreProductsEditPage({ params, searchParams }) {
                 status: product.status || 'active',
                 featured: product.featured || false,
                 store: product.store ? product.store.toString() : (storeIdParam || ''),
+                hsnCode: product.hsnCode || '',
             }}/>
         </div>
       </AdminLayout>

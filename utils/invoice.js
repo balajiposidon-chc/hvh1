@@ -23,11 +23,19 @@ export function printInvoiceHTML(order) {
   const paymentMethod = order.paymentMethod || 'COD';
   const status = order.status || 'Pending';
 
+  // Seller Details
+  const store = order.store || {};
+  const sellerName = store.name || 'Hill & Valley Spices Head Office';
+  const sellerAddress = store.location || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
+  const sellerPhone = store.contactNumber || '+91 94471 23456';
+  const sellerEmail = store.email || 'info@hillandvalley.com';
+
   const itemsHTML = (order.orderItems || []).map(item => `
     <tr>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee;">
         <div style="font-weight: bold; color: #1e293b;">${item.name}</div>
       </td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${item.hsnCode || '0908'}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">₹${item.price.toLocaleString()}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity} ${item.unit || 'piece'}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #1e293b;">₹${(item.price * item.quantity).toLocaleString()}</td>
@@ -92,8 +100,8 @@ export function printInvoiceHTML(order) {
         }
         .meta-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 40px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 20px;
           margin-bottom: 40px;
         }
         .meta-box h4 {
@@ -102,10 +110,12 @@ export function printInvoiceHTML(order) {
           font-size: 14px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          border-bottom: 1px solid #f1f5f9;
+          padding-bottom: 4px;
         }
         .meta-box p {
           margin: 4px 0;
-          font-size: 14px;
+          font-size: 13px;
           line-height: 1.5;
         }
         .table-box {
@@ -192,7 +202,7 @@ export function printInvoiceHTML(order) {
       <div class="invoice-box">
         <div class="header">
           <div class="logo">HILL & VALLEY <span>SPICES</span></div>
-          <div class="title">INVOICE<br/><span style="font-size: 12px; font-weight: normal; color: #94a3b8;">#ORD-${orderShortId}</span></div>
+          <div class="title">TAX INVOICE<br/><span style="font-size: 12px; font-weight: normal; color: #94a3b8;">#ORD-${orderShortId}</span></div>
         </div>
         
         <div class="meta-grid">
@@ -202,6 +212,13 @@ export function printInvoiceHTML(order) {
             <p>Email: ${userEmail}</p>
             <p>Phone: ${userPhone}</p>
             <p>Address: ${street}, ${city}, ${state} - ${zipCode}</p>
+          </div>
+          <div class="meta-box">
+            <h4>Sold By</h4>
+            <p><strong>${sellerName}</strong></p>
+            <p>Address: ${sellerAddress}</p>
+            <p>Phone: ${sellerPhone}</p>
+            <p>Email: ${sellerEmail}</p>
           </div>
           <div class="meta-box" style="text-align: right;">
             <h4>Invoice Details</h4>
@@ -215,10 +232,11 @@ export function printInvoiceHTML(order) {
         <table class="table-box">
           <thead>
             <tr>
-              <th style="text-align: left; width: 45%;">Item Description</th>
-              <th style="text-align: center; width: 20%;">Price</th>
+              <th style="text-align: left; width: 40%;">Item Description</th>
+              <th style="text-align: center; width: 15%;">HSN</th>
+              <th style="text-align: center; width: 15%;">Price</th>
               <th style="text-align: center; width: 15%;">Qty</th>
-              <th style="text-align: right; width: 20%;">Total</th>
+              <th style="text-align: right; width: 15%;">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -283,6 +301,13 @@ export async function downloadInvoicePDF(order) {
     const orderId = order._id ? order._id.toString().toUpperCase() : 'N/A';
     const orderShortId = orderId.length > 6 ? orderId.slice(-6) : orderId;
     const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+
+    // Seller Details
+    const store = order.store || {};
+    const sellerName = store.name || 'Hill & Valley Spices Head Office';
+    const sellerAddress = store.location || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
+    const sellerPhone = store.contactNumber || '+91 94471 23456';
+    const sellerEmail = store.email || 'info@hillandvalley.com';
     
     // Theme Colors
     const primaryColor = [185, 28, 28]; // Cherry Red (#b91c1c)
@@ -295,7 +320,7 @@ export async function downloadInvoicePDF(order) {
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, pageWidth, 28, 'F');
 
-    // Title / Brand
+    // Title / Brand (Hill & Valley Logo)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(255, 255, 255);
@@ -308,16 +333,15 @@ export async function downloadInvoicePDF(order) {
     // INVOICE Header text
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
-    doc.text("INVOICE", pageWidth - 60, 19);
+    doc.text("TAX INVOICE", pageWidth - 70, 19);
 
-    // 2. Invoice Details Grid (Y: 40)
+    // 2. Invoice Details Grid (Y: 40) - 3 Columns
     doc.setTextColor(...textColorDark);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     
-    // Left: Billing details
+    // Column 1: Billing details (X: 15)
     doc.setFont('helvetica', 'bold');
     doc.text("Billed To:", 15, 42);
-    
     doc.setFont('helvetica', 'normal');
     const name = order.user?.name || 'Customer';
     const email = order.user?.email || 'N/A';
@@ -327,42 +351,69 @@ export async function downloadInvoicePDF(order) {
     const state = order.shippingAddress?.state || 'N/A';
     const zipCode = order.shippingAddress?.zipCode || 'N/A';
     
-    doc.text(name, 15, 48);
+    doc.text(name, 15, 47);
     doc.setTextColor(...textColorMuted);
-    doc.text(`Email: ${email}`, 15, 53);
-    doc.text(`Phone: ${phone}`, 15, 58);
-    doc.text(`Address: ${street}, ${city},`, 15, 63);
-    doc.text(`${state} - ${zipCode}`, 15, 68);
+    doc.text(`Email: ${email}`, 15, 52);
+    doc.text(`Phone: ${phone}`, 15, 57);
+    doc.text(`Addr: ${street},`, 15, 62);
+    doc.text(`${city}, ${state} - ${zipCode}`, 15, 67);
 
-    // Right: Invoice Info
+    // Column 2: Seller details (X: pageWidth / 3 + 5)
+    const col2X = pageWidth / 3 + 5;
     doc.setTextColor(...textColorDark);
     doc.setFont('helvetica', 'bold');
-    doc.text("Invoice Metadata:", pageWidth - 90, 42);
-
+    doc.text("Sold By:", col2X, 42);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Order ID: #ORD-${orderShortId}`, pageWidth - 90, 48);
+    doc.text(sellerName, col2X, 47);
     doc.setTextColor(...textColorMuted);
-    doc.text(`System ID: ${orderId}`, pageWidth - 90, 53);
-    doc.text(`Invoice Date: ${dateStr}`, pageWidth - 90, 58);
-    doc.text(`Payment: ${order.paymentMethod || 'COD'}`, pageWidth - 90, 63);
-    doc.text(`Status: ${order.status || 'Pending'}`, pageWidth - 90, 68);
+    doc.text(`Email: ${sellerEmail}`, col2X, 52);
+    doc.text(`Phone: ${sellerPhone}`, col2X, 57);
+    
+    // Split and format address lines
+    let addrLine1 = sellerAddress;
+    let addrLine2 = '';
+    const commaIdx = sellerAddress.indexOf(',', 22);
+    if (commaIdx !== -1) {
+      addrLine1 = sellerAddress.substring(0, commaIdx + 1);
+      addrLine2 = sellerAddress.substring(commaIdx + 1).trim();
+    } else if (sellerAddress.length > 25) {
+      addrLine1 = sellerAddress.substring(0, 25) + '...';
+    }
+    doc.text(`Addr: ${addrLine1}`, col2X, 62);
+    if (addrLine2) {
+      doc.text(addrLine2, col2X + 9, 67);
+    }
+
+    // Column 3: Invoice Info (X: 2 * pageWidth / 3 + 5)
+    const col3X = 2 * pageWidth / 3 + 5;
+    doc.setTextColor(...textColorDark);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Invoice Info:", col3X, 42);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Order: #ORD-${orderShortId}`, col3X, 47);
+    doc.setTextColor(...textColorMuted);
+    doc.text(`ID: ${orderId.substring(0, 14)}`, col3X, 52);
+    doc.text(`Date: ${dateStr}`, col3X, 57);
+    doc.text(`Payment: ${order.paymentMethod || 'COD'}`, col3X, 62);
+    doc.text(`Status: ${order.status || 'Pending'}`, col3X, 67);
 
     // Horizontal Line Separator
     doc.setDrawColor(...borderGray);
     doc.setLineWidth(0.5);
-    doc.line(15, 75, pageWidth - 15, 75);
+    doc.line(15, 73, pageWidth - 15, 73);
 
     // 3. Table Header
-    let currentY = 85;
+    let currentY = 82;
     doc.setFillColor(...lightGray);
     doc.rect(15, currentY, pageWidth - 30, 8, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(...textColorMuted);
     
     doc.text("ITEM DESCRIPTION", 18, currentY + 5.5);
-    doc.text("UNIT PRICE", pageWidth - 80, currentY + 5.5, { align: 'right' });
-    doc.text("QTY", pageWidth - 55, currentY + 5.5, { align: 'center' });
+    doc.text("HSN", pageWidth - 95, currentY + 5.5, { align: 'center' });
+    doc.text("UNIT PRICE", pageWidth - 65, currentY + 5.5, { align: 'right' });
+    doc.text("QTY", pageWidth - 45, currentY + 5.5, { align: 'center' });
     doc.text("TOTAL", pageWidth - 18, currentY + 5.5, { align: 'right' });
     
     doc.line(15, currentY + 8, pageWidth - 15, currentY + 8);
@@ -390,8 +441,11 @@ export async function downloadInvoicePDF(order) {
       doc.setFont('helvetica', 'bold');
       doc.text(item.name, 18, currentY + 6);
       doc.setFont('helvetica', 'normal');
-      doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 80, currentY + 6, { align: 'right' });
-      doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 55, currentY + 6, { align: 'center' });
+      doc.setFont('courier', 'normal');
+      doc.text(item.hsnCode || '0908', pageWidth - 95, currentY + 6, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 65, currentY + 6, { align: 'right' });
+      doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 45, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'bold');
       doc.text(`₹${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
       
@@ -403,7 +457,7 @@ export async function downloadInvoicePDF(order) {
 
     // 4. Financial Calculations Summary Box
     currentY += 5;
-    const summaryX = pageWidth - 95;
+    const summaryX = pageWidth - 90;
     
     const subtotal = order.itemsPrice || 0;
     const shipping = order.shippingPrice || 0;

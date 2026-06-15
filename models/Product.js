@@ -15,6 +15,7 @@ const ProductSchema = new mongoose.Schema({
   images: [{ type: String }],
   weight: { type: String },
   unit: { type: String, default: 'piece' },
+  hsnCode: { type: String, default: '' },
   tags: [{ type: String }],
   isFeatured: { type: Boolean, default: false },
   featured: { type: Boolean, default: false },

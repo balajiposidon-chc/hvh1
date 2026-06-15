@@ -26,7 +26,7 @@ export async function GET(req) {
     await connectToDatabase();
 
     // 1. Fetch all orders for revenue, counts, charts, and recent order listings
-    const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 }).lean();
+    const orders = await Order.find().populate('user', 'name email').populate('store').sort({ createdAt: -1 }).lean();
     
     // 2. Counts
     const totalProducts = await Product.countDocuments();

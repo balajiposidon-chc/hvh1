@@ -19,6 +19,7 @@ export default function AdminProductForm({ initialData, action }) {
         featured: initialData?.featured || false,
         store: initialData?.store || '',
         unit: initialData?.unit || 'piece',
+        hsnCode: initialData?.hsnCode || '',
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -179,7 +180,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </label>
             </div>
             
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
                 <label className="block">
                     <span className="text-sm text-slate-700">Stock</span>
                     <Input type="number" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
@@ -200,6 +201,10 @@ export default function AdminProductForm({ initialData, action }) {
                         <option value="ml">Milliliter (ml)</option>
                         <option value="pack">Pack</option>
                     </select>
+                </label>
+                <label className="block">
+                    <span className="text-sm text-slate-700">HSN Code</span>
+                    <Input value={form.hsnCode} onChange={(e) => handleChange('hsnCode', e.target.value)} placeholder="e.g. 0908" />
                 </label>
             </div>
             

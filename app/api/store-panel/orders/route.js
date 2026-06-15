@@ -41,7 +41,7 @@ export async function GET(req) {
       }
     }
 
-    const orders = await Order.find({ store: store._id }).populate('user', 'name email').sort({ createdAt: -1 });
+    const orders = await Order.find({ store: store._id }).populate('user', 'name email').populate('store').sort({ createdAt: -1 });
     return NextResponse.json({ success: true, orders });
   } catch (error) {
     console.error('Store Scoped Orders Fetch Error:', error);
