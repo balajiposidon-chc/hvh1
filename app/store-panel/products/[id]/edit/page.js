@@ -62,6 +62,10 @@ export default async function StoreProductsEditPage({ params, searchParams }) {
                 store: product.store ? product.store.toString() : (storeIdParam || ''),
                 hsnCode: product.hsnCode || '',
                 gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
+                culinaryUses: product.culinaryUses || '',
+                storageCare: product.storageCare || '',
+                sourcingGuarantee: product.sourcingGuarantee || '',
+                allergenSafety: product.allergenSafety || '',
             }}/>
         </div>
       </AdminLayout>

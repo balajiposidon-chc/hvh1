@@ -274,21 +274,21 @@ export default function ProductDetailPage() {
             <div className="col-md-6">
               <div className="border-start border-cherry border-3 ps-3 mb-4">
                 <h6 className="fw-bold text-dark">Suggested Culinary Uses</h6>
-                <p className="text-muted small">Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces.</p>
+                <p className="text-muted small">{product.culinaryUses || "Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces."}</p>
               </div>
               <div className="border-start border-cherry border-3 ps-3">
                 <h6 className="fw-bold text-dark">Authentic Sourcing Guarantee</h6>
-                <p className="text-muted small">Ethically hand-picked from family estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention.</p>
+                <p className="text-muted small">{product.sourcingGuarantee || "Ethically hand-picked from family estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention."}</p>
               </div>
             </div>
             <div className="col-md-6">
               <div className="border-start border-cherry border-3 ps-3 mb-4">
                 <h6 className="fw-bold text-dark">Storage & Care</h6>
-                <p className="text-muted small">Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils.</p>
+                <p className="text-muted small">{product.storageCare || "Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils."}</p>
               </div>
               <div className="border-start border-cherry border-3 ps-3">
                 <h6 className="fw-bold text-dark">Allergen Safety</h6>
-                <p className="text-muted small">Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment.</p>
+                <p className="text-muted small">{product.allergenSafety || "Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment."}</p>
               </div>
             </div>
           </div>

@@ -37,6 +37,10 @@ export default async function AdminProductsEditPage({ params }) {
             featured: product.featured,
             hsnCode: product.hsnCode || '',
             gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
+            culinaryUses: product.culinaryUses || '',
+            storageCare: product.storageCare || '',
+            sourcingGuarantee: product.sourcingGuarantee || '',
+            allergenSafety: product.allergenSafety || '',
         }}/>
     </AdminLayout>);
 }

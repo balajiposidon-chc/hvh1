@@ -49,6 +49,10 @@ export default async function SuperAdminProductsEditPage({ params }) {
                 featured: product.featured || false,
                 hsnCode: product.hsnCode || '',
                 gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
+                culinaryUses: product.culinaryUses || '',
+                storageCare: product.storageCare || '',
+                sourcingGuarantee: product.sourcingGuarantee || '',
+                allergenSafety: product.allergenSafety || '',
             }}/>
         </div>
       </AdminLayout>

@@ -58,6 +58,10 @@ export async function PUT(request, { params }) {
         featured: body.featured || false,
         hsnCode: body.hsnCode,
         gstRate: body.gstRate !== undefined ? Number(body.gstRate) : 5,
+        culinaryUses: body.culinaryUses,
+        storageCare: body.storageCare,
+        sourcingGuarantee: body.sourcingGuarantee,
+        allergenSafety: body.allergenSafety,
     };
 
     // If Super Admin specifies a store, allow changing it

@@ -57,6 +57,10 @@ export async function POST(request) {
         addedBy: session.user.id || session.user._id,
         hsnCode: body.hsnCode || '',
         gstRate: body.gstRate !== undefined ? Number(body.gstRate) : 5,
+        culinaryUses: body.culinaryUses || '',
+        storageCare: body.storageCare || '',
+        sourcingGuarantee: body.sourcingGuarantee || '',
+        allergenSafety: body.allergenSafety || '',
     });
     await product.save();
     return NextResponse.json({ message: 'Created product', id: product._id.toString() }, { status: 201 });

@@ -21,6 +21,10 @@ export default function AdminProductForm({ initialData, action }) {
         unit: initialData?.unit || 'piece',
         hsnCode: initialData?.hsnCode || '',
         gstRate: initialData?.gstRate || '5',
+        culinaryUses: initialData?.culinaryUses || '',
+        storageCare: initialData?.storageCare || '',
+        sourcingGuarantee: initialData?.sourcingGuarantee || '',
+        allergenSafety: initialData?.allergenSafety || '',
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -45,6 +49,8 @@ export default function AdminProductForm({ initialData, action }) {
 
     const detectHsnAndGst = (nameValue) => {
         const nameLower = nameValue.toLowerCase();
+        
+        // HSN & GST Mapping
         const hsnMap = [
             { keywords: ['cardamom', 'elaichi'], hsn: '0908', gst: '5' },
             { keywords: ['pepper', 'kurumulaku'], hsn: '0904', gst: '5' },
@@ -64,14 +70,81 @@ export default function AdminProductForm({ initialData, action }) {
             { keywords: ['jam', 'sauce', 'butter', 'spread'], hsn: '2007', gst: '12' },
             { keywords: ['soap', 'shampoo', 'cosmetic'], hsn: '3401', gst: '18' },
         ];
-        const matched = hsnMap.find(item => item.keywords.some(k => nameLower.includes(k)));
-        if (matched) {
-            setForm((current) => ({
-                ...current,
-                hsnCode: current.hsnCode ? current.hsnCode : matched.hsn,
-                gstRate: current.gstRate && current.gstRate !== '5' ? current.gstRate : matched.gst
-            }));
-        }
+        
+        // Tips & Recommendations Mapping
+        const tipsMap = [
+            {
+                keywords: ['cardamom', 'elaichi', 'pepper', 'kurumulaku', 'clove', 'grampoo', 'nutmeg', 'jathikka', 'cinnamon', 'karuvapatta', 'ginger', 'inji', 'turmeric', 'manjal', 'saffron', 'kesar', 'vanilla', 'tea', 'chai', 'coffee', 'kaapi'],
+                culinaryUses: "Perfect for brewing aromatic chais, baking sweet pastries, or flavoring high-end savory curry sauces and rice dishes.",
+                storageCare: "Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural essential oils and aroma.",
+                sourcingGuarantee: "Ethically hand-picked from premium organic estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention.",
+                allergenSafety: "Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment."
+            },
+            {
+                keywords: ['honey', 'then'],
+                culinaryUses: "Excellent as a natural sweetener for tea and coffee, drizzled over desserts, or used in salad dressings and marinades.",
+                storageCare: "Store at room temperature in a sealed container. Do not refrigerate. If crystallization occurs, place the jar in warm water.",
+                sourcingGuarantee: "100% pure, unfiltered raw honey sourced directly from wild forest hives and local apiaries under sustainable practices.",
+                allergenSafety: "100% natural, contains no additives. Not recommended for infants under 1 year of age."
+            },
+            {
+                keywords: ['dry fruit', 'cashew', 'almond', 'badam', 'nuts'],
+                culinaryUses: "Great for healthy snacking, adding to morning oatmeal, baking, or garnishing desserts and pilaf rice.",
+                storageCare: "Store in a cool, dry place. Best kept in a sealed airtight container in the refrigerator to prevent rancidity and maintain crunch.",
+                sourcingGuarantee: "Carefully sorted and grade-A selected from trusted orchard farms to ensure uniform size and premium quality.",
+                allergenSafety: "Contains tree nuts. Processed in a facility that handles other nuts and sesame."
+            },
+            {
+                keywords: ['oil', 'essential oil', 'massage oil'],
+                culinaryUses: "For external use, aromatherapy, massage, or diluting with carrier oils. Check specific labels for culinary applicability.",
+                storageCare: "Store in a cool, dark place in amber glass bottles. Keep away from heat, open flames, and direct sunlight.",
+                sourcingGuarantee: "100% pure therapeutic-grade oil extracted using traditional steam distillation or cold-press extraction methods.",
+                allergenSafety: "Highly concentrated. Conduct a patch test before skin application. Keep out of reach of children."
+            },
+            {
+                keywords: ['chocolate', 'cocoa'],
+                culinaryUses: "Perfect for chocolate desserts, hot cocoa drinks, baking recipes, or direct gourmet snacking.",
+                storageCare: "Store in a cool, dry place (15-18°C) away from strong odors and heat sources to prevent fat bloom.",
+                sourcingGuarantee: "Crafted from fine-flavor single-origin cocoa beans sourced via fair-trade partnerships with local farming co-operatives.",
+                allergenSafety: "May contain trace amounts of milk solids, soy lecithin, and nuts depending on the specific batch recipe."
+            },
+            {
+                keywords: ['jam', 'sauce', 'butter', 'spread'],
+                culinaryUses: "Ideal as a breakfast spread on toasted bread, topping for pancakes, waffles, yogurt, or as dessert fillings.",
+                storageCare: "Refrigerate after opening. Consume within 4 weeks of opening. Always use a clean spoon.",
+                sourcingGuarantee: "Made from fresh, sun-ripened regional fruits cooked in small batches to preserve original taste and texture.",
+                allergenSafety: "Contains fruit ingredients. Free from artificial colors, preservatives, and high-fructose corn syrup."
+            },
+            {
+                keywords: ['soap', 'shampoo', 'cosmetic'],
+                culinaryUses: "For external body, hair, and skincare use. Lather well with water and rinse thoroughly.",
+                storageCare: "Keep on a draining soap dish between uses to keep it dry and extend its lifespan.",
+                sourcingGuarantee: "Handmade using natural plant-derived saponified oils, botanical extracts, and essential oils.",
+                allergenSafety: "Contains natural essential oils. Discontinue use if irritation or skin redness occurs."
+            }
+        ];
+
+        const matchedHsn = hsnMap.find(item => item.keywords.some(k => nameLower.includes(k)));
+        const matchedTips = tipsMap.find(item => item.keywords.some(k => nameLower.includes(k)));
+
+        const fallbackTips = {
+            culinaryUses: "Versatile usage. Ideal for everyday culinary preparation or personal care depending on product type.",
+            storageCare: "Keep in a cool, dry place inside an airtight container away from direct sunlight and humidity.",
+            sourcingGuarantee: "Quality guaranteed and sourced from verified regional partners conforming to standard quality control.",
+            allergenSafety: "Processed under hygienic conditions. Please check specific packaging labels for allergens."
+        };
+
+        const targetTips = matchedTips || fallbackTips;
+
+        setForm((current) => ({
+            ...current,
+            hsnCode: current.hsnCode ? current.hsnCode : (matchedHsn ? matchedHsn.hsn : ''),
+            gstRate: current.gstRate && current.gstRate !== '5' ? current.gstRate : (matchedHsn ? matchedHsn.gst : '5'),
+            culinaryUses: current.culinaryUses ? current.culinaryUses : targetTips.culinaryUses,
+            storageCare: current.storageCare ? current.storageCare : targetTips.storageCare,
+            sourcingGuarantee: current.sourcingGuarantee ? current.sourcingGuarantee : targetTips.sourcingGuarantee,
+            allergenSafety: current.allergenSafety ? current.allergenSafety : targetTips.allergenSafety,
+        }));
     };
 
     const handleChange = (key, value) => {
@@ -308,6 +381,54 @@ export default function AdminProductForm({ initialData, action }) {
                         })}
                     </div>
                 )}
+            </div>
+
+            <div className="space-y-4 border-t border-slate-100 pt-6">
+                <span className="font-semibold text-slate-800 text-sm block">Cooking Tips & Recommendations</span>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                        <span className="text-sm text-slate-700">Suggested Culinary Uses</span>
+                        <textarea
+                            value={form.culinaryUses}
+                            onChange={(e) => handleChange('culinaryUses', e.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none resize-y"
+                            rows={3}
+                            placeholder="Perfect for brewing aromatic chais..."
+                        />
+                    </label>
+                    <label className="block">
+                        <span className="text-sm text-slate-700">Storage & Care</span>
+                        <textarea
+                            value={form.storageCare}
+                            onChange={(e) => handleChange('storageCare', e.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none resize-y"
+                            rows={3}
+                            placeholder="Keep inside an airtight glass container..."
+                        />
+                    </label>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                        <span className="text-sm text-slate-700">Authentic Sourcing Guarantee</span>
+                        <textarea
+                            value={form.sourcingGuarantee}
+                            onChange={(e) => handleChange('sourcingGuarantee', e.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none resize-y"
+                            rows={3}
+                            placeholder="Ethically hand-picked from family estates..."
+                        />
+                    </label>
+                    <label className="block">
+                        <span className="text-sm text-slate-700">Allergen Safety</span>
+                        <textarea
+                            value={form.allergenSafety}
+                            onChange={(e) => handleChange('allergenSafety', e.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none resize-y"
+                            rows={3}
+                            placeholder="Gluten-free, vegan-safe..."
+                        />
+                    </label>
+                </div>
             </div>
             
             <div className="grid gap-4 sm:grid-cols-2">
