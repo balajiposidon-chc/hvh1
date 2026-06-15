@@ -8,6 +8,7 @@ import Store from '@/models/Store';
 import Product from '@/lib/models/Product';
 import Order from '@/lib/models/Order';
 import Expense from '@/models/Expense';
+import User from '@/models/User';
 
 export async function GET(req) {
   try {

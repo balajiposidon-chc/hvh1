@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Store from '@/models/Store';
 import Product from '@/models/Product';
+import Category from '@/models/Category';
 
 export async function GET(req) {
   try {

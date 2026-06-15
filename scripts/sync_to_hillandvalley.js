@@ -46,6 +46,7 @@ const filesToSync = [
   'app/superadmin-dashboard/orders/[id]/edit/page.js',
   'app/superadmin-dashboard/stores/page.js',
   'app/api/stores/[id]/route.js',
+  'app/api/stores/route.js',
   'app/api/orders/[id]/route.js',
   'components/AdminProductForm.js',
   'app/product/[slug]/page.js',

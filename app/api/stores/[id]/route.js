@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Store from '@/models/Store';
+import User from '@/models/User';
 
 async function isSuperAdmin() {
   const session = await getServerSession(authOptions);

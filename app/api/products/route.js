@@ -6,6 +6,8 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
+import Store from '@/models/Store';
+import User from '@/models/User';
 import { verifyJwtToken } from '@/utils/auth';
 
 export async function GET(req) {

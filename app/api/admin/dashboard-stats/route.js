@@ -7,6 +7,7 @@ import connectToDatabase from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
 import Product from '@/lib/models/Product';
 import User from '@/models/User';
+import Store from '@/models/Store';
 
 export async function GET(req) {
   try {

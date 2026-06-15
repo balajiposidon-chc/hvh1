@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
 import Product from '@/lib/models/Product';
+import Store from '@/models/Store';
+import User from '@/models/User';
 
 export async function GET(request) {
     const session = await getServerSession(authOptions);

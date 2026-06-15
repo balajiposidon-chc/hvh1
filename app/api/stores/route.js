@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Store from '@/models/Store';
 import Role from '@/models/Role';
+import User from '@/models/User';
 
 async function hasStorePermission() {
   const session = await getServerSession(authOptions);
