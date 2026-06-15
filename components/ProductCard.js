@@ -96,7 +96,7 @@ export default function ProductCard({ product }) {
           {/* Pricing & Stock Footer */}
           <div className="d-flex justify-content-between align-items-center mt-auto border-top pt-3">
             <div>
-              <span className="fs-5 fw-bold text-cherry">₹{displayPrice}</span>
+              <span className="fs-5 fw-bold text-cherry">₹{displayPrice} <span className="text-muted" style={{ fontSize: '0.75rem', fontWeight: 'normal' }}>/ {product.unit || 'piece'}</span></span>
               {originalPrice && (
                 <span className="text-muted text-decoration-line-through ms-2 small" style={{ fontSize: '0.8rem' }}>₹{originalPrice}</span>
               )}

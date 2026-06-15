@@ -208,7 +208,7 @@ function StoreOrdersManagementContent() {
                     <li key={idx} className="p-3 flex justify-between items-center bg-white hover:bg-neutral-50/30 transition-colors">
                       <div>
                         <p className="font-bold text-neutral-900 text-sm">{item.name}</p>
-                        <p className="text-xs text-neutral-400">Qty: {item.quantity} • ₹{item.price} each</p>
+                        <p className="text-xs text-neutral-400">Qty: {item.quantity} {item.unit || 'piece'} • ₹{item.price} each</p>
                       </div>
                       <span className="font-bold text-neutral-800 text-sm">₹{(item.price * item.quantity).toLocaleString()}</span>
                     </li>

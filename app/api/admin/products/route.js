@@ -49,6 +49,7 @@ export async function POST(request) {
         categoryName: body.category,
         brand: body.brand,
         stock: body.stock,
+        unit: body.unit || 'piece',
         images: body.images || [],
         status: body.status || 'active',
         featured: body.featured || false,

@@ -52,7 +52,8 @@ export default function CheckoutPage() {
                 name: item.name,
                 price: item.discountPrice > 0 ? item.discountPrice : item.price,
                 quantity: item.quantity,
-                image: item.images?.[0] || '/placeholder.png'
+                image: item.images?.[0] || '/placeholder.png',
+                unit: item.unit || 'piece'
             }));
 
             const response = await fetch('/api/orders', {
@@ -206,7 +207,7 @@ export default function CheckoutPage() {
                           <img src={item.images?.[0] || '/placeholder.png'} alt={item.name} className="rounded" style={{ height: '40px', width: '40px', objectFit: 'cover' }} />
                           <div className="flex-grow-1 min-w-0">
                             <h6 className="fw-bold text-dark small mb-0 text-truncate">{item.name}</h6>
-                            <small className="text-muted">Qty: {item.quantity}</small>
+                            <small className="text-muted">Qty: {item.quantity} {item.unit || 'piece'}</small>
                           </div>
                           <span className="fw-semibold small text-dark">₹{itemPrice * item.quantity}</span>
                         </div>

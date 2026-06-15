@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
                 {/* Price Panel */}
                 <div className="mb-4">
                   <div className="d-flex align-items-end gap-3">
-                    <span className="display-5 fw-bold text-cherry" style={{ lineHeight: 1 }}>₹{displayPrice}</span>
+                    <span className="display-5 fw-bold text-cherry" style={{ lineHeight: 1 }}>₹{displayPrice} <span className="text-muted" style={{ fontSize: '1rem', fontWeight: 'normal' }}>/ {product.unit || 'piece'}</span></span>
                     {originalPrice && (
                       <span className="fs-5 text-muted text-decoration-line-through mb-1">₹{originalPrice}</span>
                     )}
@@ -178,8 +178,8 @@ export default function ProductDetailPage() {
                 <div className="row g-3 mb-4">
                   <div className="col-sm-6">
                     <div className="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
-                      <span className="text-muted small">Weight:</span>
-                      <strong className="text-dark small">{product.weight || '100g'}</strong>
+                      <span className="text-muted small">Selling Unit:</span>
+                      <strong className="text-dark small">{product.unit || 'piece'}</strong>
                     </div>
                   </div>
                   <div className="col-sm-6">

@@ -82,6 +82,7 @@ export async function POST(request) {
             price: Number(item.price),
             quantity: Number(item.quantity),
             image: item.image || '',
+            unit: item.unit || 'piece'
         }));
 
         const order = new Order({

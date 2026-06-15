@@ -18,6 +18,7 @@ export default function AdminProductForm({ initialData, action }) {
         status: initialData?.status || 'active',
         featured: initialData?.featured || false,
         store: initialData?.store || '',
+        unit: initialData?.unit || 'piece',
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -183,25 +184,43 @@ export default function AdminProductForm({ initialData, action }) {
                     <span className="text-sm text-slate-700">Stock</span>
                     <Input type="number" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
                 </label>
-                <div className="space-y-1">
-                    <span className="text-sm text-slate-700 block">Product Images</span>
-                    <label className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50">
-                        <span className="text-sm font-semibold text-slate-600 flex items-center gap-2 select-none">
-                            {uploading ? (
-                                <>
-                                    <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
-                                    <span>Uploading...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Upload size={16} className="text-slate-500" />
-                                    <span>Upload Local Image files</span>
-                                </>
-                            )}
-                        </span>
-                        <input type="file" multiple accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
-                    </label>
-                </div>
+                <label className="block">
+                    <span className="text-sm text-slate-700">Quantity Unit</span>
+                    <select
+                        value={form.unit}
+                        onChange={(e) => handleChange('unit', e.target.value)}
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none cursor-pointer"
+                        required
+                    >
+                        <option value="piece">Piece (pc)</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="mg">Milligram (mg)</option>
+                        <option value="l">Liter (l)</option>
+                        <option value="ml">Milliliter (ml)</option>
+                        <option value="pack">Pack</option>
+                    </select>
+                </label>
+            </div>
+            
+            <div className="space-y-1">
+                <span className="text-sm text-slate-700 block">Product Images</span>
+                <label className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50">
+                    <span className="text-sm font-semibold text-slate-600 flex items-center gap-2 select-none">
+                        {uploading ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
+                                <span>Uploading...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Upload size={16} className="text-slate-500" />
+                                <span>Upload Local Image files</span>
+                            </>
+                        )}
+                    </span>
+                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
+                </label>
             </div>
 
             <div className="space-y-2">

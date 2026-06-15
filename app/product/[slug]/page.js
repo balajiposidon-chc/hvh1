@@ -58,8 +58,8 @@ export default function ProductDetailPage() {
               )}
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 <div className="rounded-3xl bg-sand/60 p-6">
-                  <p className="text-sm text-charcoal/70">Weight</p>
-                  <p className="mt-2 text-lg font-semibold text-charcoal">{product.weight}</p>
+                  <p className="text-sm text-charcoal/70">Quantity Unit</p>
+                  <p className="mt-2 text-lg font-semibold text-charcoal">{product.unit || 'piece'}</p>
                 </div>
                 <div className="rounded-3xl bg-sand/60 p-6">
                   <p className="text-sm text-charcoal/70">GST</p>
@@ -71,7 +71,7 @@ export default function ProductDetailPage() {
           <div className="glass-card p-10">
             <div className="text-sm text-charcoal/70">Special premium offer</div>
             <div className="mt-4 flex items-end gap-4">
-              <p className="text-4xl font-semibold text-forest">₹{product.offerPrice}</p>
+              <p className="text-4xl font-semibold text-forest">₹{product.offerPrice} <span className="text-sm text-charcoal/60 font-normal">/ {product.unit || 'piece'}</span></p>
               <p className="text-sm text-charcoal/60 line-through">₹{product.price}</p>
             </div>
             <div className="mt-8 space-y-4">

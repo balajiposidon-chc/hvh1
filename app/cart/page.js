@@ -60,7 +60,7 @@ export default function CartPage() {
                           <h5 className="fw-bold text-dark mb-1" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem' }}>
                             {item.name}
                           </h5>
-                          <p className="text-cherry fw-semibold small mb-2">₹{itemPrice} each</p>
+                          <p className="text-cherry fw-semibold small mb-2">₹{itemPrice} / {item.unit || 'piece'}</p>
                           
                           {/* Quantity selector */}
                           <div className="d-inline-flex align-items-center border border-light rounded-pill p-1 bg-light">
@@ -71,7 +71,7 @@ export default function CartPage() {
                             >
                               <Minus size={12} />
                             </button>
-                            <span className="px-3 fw-bold text-dark small">{item.quantity}</span>
+                            <span className="px-3 fw-bold text-dark small">{item.quantity} {item.unit || 'piece'}</span>
                             <button 
                               className="btn btn-sm btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" 
                               style={{ width: '26px', height: '26px', padding: 0 }}

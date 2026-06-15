@@ -29,7 +29,7 @@ export function printInvoiceHTML(order) {
         <div style="font-weight: bold; color: #1e293b;">${item.name}</div>
       </td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">₹${item.price.toLocaleString()}</td>
-      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity} ${item.unit || 'piece'}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #1e293b;">₹${(item.price * item.quantity).toLocaleString()}</td>
     </tr>
   `).join('');
@@ -391,7 +391,7 @@ export async function downloadInvoicePDF(order) {
       doc.text(item.name, 18, currentY + 6);
       doc.setFont('helvetica', 'normal');
       doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 80, currentY + 6, { align: 'right' });
-      doc.text(String(item.quantity), pageWidth - 55, currentY + 6, { align: 'center' });
+      doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 55, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'bold');
       doc.text(`₹${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
       
