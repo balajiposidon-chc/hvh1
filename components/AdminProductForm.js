@@ -20,6 +20,7 @@ export default function AdminProductForm({ initialData, action }) {
         store: initialData?.store || '',
         unit: initialData?.unit || 'piece',
         hsnCode: initialData?.hsnCode || '',
+        gstRate: initialData?.gstRate || '5',
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -42,8 +43,42 @@ export default function AdminProductForm({ initialData, action }) {
         fetchCategories();
     }, []);
 
+    const detectHsnAndGst = (nameValue) => {
+        const nameLower = nameValue.toLowerCase();
+        const hsnMap = [
+            { keywords: ['cardamom', 'elaichi'], hsn: '0908', gst: '5' },
+            { keywords: ['pepper', 'kurumulaku'], hsn: '0904', gst: '5' },
+            { keywords: ['clove', 'grampoo'], hsn: '0907', gst: '5' },
+            { keywords: ['nutmeg', 'jathikka'], hsn: '0908', gst: '5' },
+            { keywords: ['cinnamon', 'karuvapatta'], hsn: '0906', gst: '5' },
+            { keywords: ['ginger', 'inji'], hsn: '0910', gst: '5' },
+            { keywords: ['turmeric', 'manjal'], hsn: '0910', gst: '5' },
+            { keywords: ['saffron', 'kesar'], hsn: '0910', gst: '5' },
+            { keywords: ['vanilla'], hsn: '0905', gst: '5' },
+            { keywords: ['tea', 'chai'], hsn: '0902', gst: '5' },
+            { keywords: ['coffee', 'kaapi'], hsn: '0901', gst: '5' },
+            { keywords: ['honey', 'then'], hsn: '0409', gst: '5' },
+            { keywords: ['dry fruit', 'cashew', 'almond', 'badam'], hsn: '0801', gst: '12' },
+            { keywords: ['oil', 'essential oil', 'massage oil'], hsn: '3301', gst: '18' },
+            { keywords: ['chocolate', 'cocoa'], hsn: '1806', gst: '18' },
+            { keywords: ['jam', 'sauce', 'butter', 'spread'], hsn: '2007', gst: '12' },
+            { keywords: ['soap', 'shampoo', 'cosmetic'], hsn: '3401', gst: '18' },
+        ];
+        const matched = hsnMap.find(item => item.keywords.some(k => nameLower.includes(k)));
+        if (matched) {
+            setForm((current) => ({
+                ...current,
+                hsnCode: current.hsnCode ? current.hsnCode : matched.hsn,
+                gstRate: current.gstRate && current.gstRate !== '5' ? current.gstRate : matched.gst
+            }));
+        }
+    };
+
     const handleChange = (key, value) => {
         setForm((current) => ({ ...current, [key]: value }));
+        if (key === 'name') {
+            detectHsnAndGst(value);
+        }
     };
 
     const handleImageUpload = async (e) => {
@@ -111,6 +146,7 @@ export default function AdminProductForm({ initialData, action }) {
             price: Number(form.price),
             discountPrice: Number(form.discountPrice),
             stock: Number(form.stock),
+            gstRate: Number(form.gstRate),
             images: form.images.split(',').map((item) => item.trim()).filter(Boolean),
         };
         const url = action === 'create' ? '/api/admin/products' : `/api/admin/products/${initialData?.id}`;
@@ -180,7 +216,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </label>
             </div>
             
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                     <span className="text-sm text-slate-700">Stock</span>
                     <Input type="number" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
@@ -202,9 +238,27 @@ export default function AdminProductForm({ initialData, action }) {
                         <option value="pack">Pack</option>
                     </select>
                 </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                     <span className="text-sm text-slate-700">HSN Code</span>
                     <Input value={form.hsnCode} onChange={(e) => handleChange('hsnCode', e.target.value)} placeholder="e.g. 0908" />
+                </label>
+                <label className="block">
+                    <span className="text-sm text-slate-700">GST Rate (%)</span>
+                    <select
+                        value={form.gstRate}
+                        onChange={(e) => handleChange('gstRate', e.target.value)}
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none cursor-pointer"
+                        required
+                    >
+                        <option value="0">0% (Nil Rated)</option>
+                        <option value="5">5% (Spices & Essentials)</option>
+                        <option value="12">12% (Processed Foods / Nuts)</option>
+                        <option value="18">18% (Oils & Cosmetics)</option>
+                        <option value="28">28% (Luxury Goods)</option>
+                    </select>
                 </label>
             </div>
             

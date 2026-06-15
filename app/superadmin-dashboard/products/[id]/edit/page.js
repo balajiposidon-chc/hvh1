@@ -48,6 +48,7 @@ export default async function SuperAdminProductsEditPage({ params }) {
                 status: product.status || 'active',
                 featured: product.featured || false,
                 hsnCode: product.hsnCode || '',
+                gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
             }}/>
         </div>
       </AdminLayout>

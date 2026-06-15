@@ -77,17 +77,26 @@ export async function POST(request) {
         }
 
         const orderItems = [];
+        let calculatedItemsPrice = 0;
+        let calculatedTaxPrice = 0;
         for (const item of items) {
             const pId = item.id || item.productId;
             const dbProduct = await Product.findById(pId);
+            const gstRate = dbProduct?.gstRate !== undefined ? dbProduct.gstRate : 5;
+            const itemPrice = Number(item.price);
+            const itemQty = Number(item.quantity);
+            calculatedItemsPrice += itemPrice * itemQty;
+            calculatedTaxPrice += itemPrice * itemQty * (gstRate / 100);
+
             orderItems.push({
                 product: pId,
                 name: item.name,
-                price: Number(item.price),
-                quantity: Number(item.quantity),
+                price: itemPrice,
+                quantity: itemQty,
                 image: item.image || '',
                 unit: item.unit || 'piece',
-                hsnCode: dbProduct?.hsnCode || ''
+                hsnCode: dbProduct?.hsnCode || '',
+                gstRate: gstRate
             });
         }
 
@@ -100,6 +109,9 @@ export async function POST(request) {
             }
         }
 
+        const finalShippingPrice = Number(shippingFee);
+        const finalTotalPrice = calculatedItemsPrice + calculatedTaxPrice + finalShippingPrice;
+
         const order = new Order({
             user: session.user.id,
             store: orderStoreId,
@@ -107,10 +119,10 @@ export async function POST(request) {
             shippingAddress: parsedAddress,
             phone,
             paymentMethod: 'COD', // Cash on Delivery
-            itemsPrice: Number(subtotal),
-            taxPrice: Number(tax),
-            shippingPrice: Number(shippingFee),
-            totalPrice: Number(total),
+            itemsPrice: calculatedItemsPrice,
+            taxPrice: calculatedTaxPrice,
+            shippingPrice: finalShippingPrice,
+            totalPrice: finalTotalPrice,
             status: 'Pending',
         });
 

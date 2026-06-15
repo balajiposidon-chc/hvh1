@@ -36,6 +36,7 @@ export function printInvoiceHTML(order) {
         <div style="font-weight: bold; color: #1e293b;">${item.name}</div>
       </td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${item.hsnCode || '0908'}</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${item.gstRate !== undefined ? item.gstRate : 5}%</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">₹${item.price.toLocaleString()}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity} ${item.unit || 'piece'}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #1e293b;">₹${(item.price * item.quantity).toLocaleString()}</td>
@@ -232,10 +233,11 @@ export function printInvoiceHTML(order) {
         <table class="table-box">
           <thead>
             <tr>
-              <th style="text-align: left; width: 40%;">Item Description</th>
-              <th style="text-align: center; width: 15%;">HSN</th>
+              <th style="text-align: left; width: 35%;">Item Description</th>
+              <th style="text-align: center; width: 12%;">HSN</th>
+              <th style="text-align: center; width: 10%;">GST %</th>
               <th style="text-align: center; width: 15%;">Price</th>
-              <th style="text-align: center; width: 15%;">Qty</th>
+              <th style="text-align: center; width: 13%;">Qty</th>
               <th style="text-align: right; width: 15%;">Total</th>
             </tr>
           </thead>
@@ -255,7 +257,7 @@ export function printInvoiceHTML(order) {
               <td style="text-align: right; font-weight: 600;">₹${shipping.toLocaleString()}</td>
             </tr>
             <tr>
-              <td style="color: #64748b;">GST / Tax (5%)</td>
+              <td style="color: #64748b;">GST / Tax</td>
               <td style="text-align: right; font-weight: 600;">₹${tax.toLocaleString()}</td>
             </tr>
             <tr class="total-row">
@@ -411,9 +413,10 @@ export async function downloadInvoicePDF(order) {
     doc.setTextColor(...textColorMuted);
     
     doc.text("ITEM DESCRIPTION", 18, currentY + 5.5);
-    doc.text("HSN", pageWidth - 95, currentY + 5.5, { align: 'center' });
-    doc.text("UNIT PRICE", pageWidth - 65, currentY + 5.5, { align: 'right' });
-    doc.text("QTY", pageWidth - 45, currentY + 5.5, { align: 'center' });
+    doc.text("HSN", pageWidth - 105, currentY + 5.5, { align: 'center' });
+    doc.text("GST %", pageWidth - 85, currentY + 5.5, { align: 'center' });
+    doc.text("UNIT PRICE", pageWidth - 63, currentY + 5.5, { align: 'right' });
+    doc.text("QTY", pageWidth - 43, currentY + 5.5, { align: 'center' });
     doc.text("TOTAL", pageWidth - 18, currentY + 5.5, { align: 'right' });
     
     doc.line(15, currentY + 8, pageWidth - 15, currentY + 8);
@@ -442,10 +445,11 @@ export async function downloadInvoicePDF(order) {
       doc.text(item.name, 18, currentY + 6);
       doc.setFont('helvetica', 'normal');
       doc.setFont('courier', 'normal');
-      doc.text(item.hsnCode || '0908', pageWidth - 95, currentY + 6, { align: 'center' });
+      doc.text(item.hsnCode || '0908', pageWidth - 105, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'normal');
-      doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 65, currentY + 6, { align: 'right' });
-      doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 45, currentY + 6, { align: 'center' });
+      doc.text(`${item.gstRate !== undefined ? item.gstRate : 5}%`, pageWidth - 85, currentY + 6, { align: 'center' });
+      doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 63, currentY + 6, { align: 'right' });
+      doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 43, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'bold');
       doc.text(`₹${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
       
@@ -476,7 +480,7 @@ export async function downloadInvoicePDF(order) {
     doc.text(`₹${shipping.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 6;
 
-    doc.text("GST / Tax (5%):", summaryX, currentY);
+    doc.text("GST / Tax:", summaryX, currentY);
     doc.text(`₹${tax.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 8;
 

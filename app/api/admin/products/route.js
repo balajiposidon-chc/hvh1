@@ -56,6 +56,7 @@ export async function POST(request) {
         store: storeId,
         addedBy: session.user.id || session.user._id,
         hsnCode: body.hsnCode || '',
+        gstRate: body.gstRate !== undefined ? Number(body.gstRate) : 5,
     });
     await product.save();
     return NextResponse.json({ message: 'Created product', id: product._id.toString() }, { status: 201 });

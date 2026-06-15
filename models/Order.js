@@ -7,7 +7,8 @@ const OrderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   image: { type: String },
   unit: { type: String, default: 'piece' },
-  hsnCode: { type: String, default: '' }
+  hsnCode: { type: String, default: '' },
+  gstRate: { type: Number, default: 5 }
 });
 
 const OrderSchema = new mongoose.Schema({

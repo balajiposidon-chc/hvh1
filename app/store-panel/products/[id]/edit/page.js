@@ -61,6 +61,7 @@ export default async function StoreProductsEditPage({ params, searchParams }) {
                 featured: product.featured || false,
                 store: product.store ? product.store.toString() : (storeIdParam || ''),
                 hsnCode: product.hsnCode || '',
+                gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
             }}/>
         </div>
       </AdminLayout>

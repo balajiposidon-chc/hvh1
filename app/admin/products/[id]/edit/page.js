@@ -36,6 +36,7 @@ export default async function AdminProductsEditPage({ params }) {
             status: product.status,
             featured: product.featured,
             hsnCode: product.hsnCode || '',
+            gstRate: product.gstRate !== undefined ? product.gstRate.toString() : '5',
         }}/>
     </AdminLayout>);
 }
