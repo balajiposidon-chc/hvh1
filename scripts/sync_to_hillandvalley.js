@@ -23,6 +23,8 @@ const filesToSync = [
   'app/api/admin/roles/route.js',
   'context/AuthContext.js',
   'middleware.js',
+  'lib/mongodb.js',
+  'services/db.js',
   'app/api/accounting/route.js',
   'app/api/accounting/[id]/route.js',
   'app/superadmin-dashboard/accounting/page.js',

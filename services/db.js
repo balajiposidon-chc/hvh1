@@ -5,12 +5,6 @@ const dotenv = require('dotenv');
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local or .env');
-}
-
 let cached = global.mongoose;
 
 if (!cached) {
@@ -18,6 +12,10 @@ if (!cached) {
 }
 
 async function connect() {
+  const MONGODB_URI = process.env.MONGODB_URI;
+  if (!MONGODB_URI) {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env.local or .env');
+  }
   if (cached.conn) {
     return cached.conn;
   }
