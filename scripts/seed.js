@@ -1,11 +1,12 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const connect = require('../services/db');
-const User = require('../models/User');
-const Product = require('../models/Product');
-const Store = require('../models/Store');
-const Order = require('../models/Order');
-const Invoice = require('../models/Invoice');
-const Transaction = require('../models/Transaction');
+const User = require('../models/User').default || require('../models/User');
+const Product = require('../models/Product').default || require('../models/Product');
+const Category = require('../models/Category').default || require('../models/Category');
+const Store = require('../models/Store').default || require('../models/Store');
+const Order = require('../models/Order').default || require('../models/Order');
+const Invoice = require('../models/Invoice').default || require('../models/Invoice');
+const Transaction = require('../models/Transaction').default || require('../models/Transaction');
 const { generateInvoiceNumber } = require('../utils/format');
 
 const seed = async () => {
@@ -15,6 +16,7 @@ const seed = async () => {
   await Promise.all([
     User.deleteMany({}),
     Product.deleteMany({}),
+    Category.deleteMany({}),
     Store.deleteMany({}),
     Order.deleteMany({}),
     Invoice.deleteMany({}),
@@ -22,11 +24,11 @@ const seed = async () => {
   ]);
 
   const users = [
-    { firstName: 'Balaji', email: 'balaji@hillandvalley.com', password: 'Balaji@123', role: 'Super Admin' },
-    { firstName: 'Admin', email: 'admin@hillandvalley.com', password: 'Admin@123', role: 'Admin' },
-    { firstName: 'Accountant', email: 'accountant@hillandvalley.com', password: 'Accountant@123', role: 'Accountant' },
-    { firstName: 'Store', email: 'store@hillandvalley.com', password: 'Store@123', role: 'Store Manager' },
-    { firstName: 'Customer', email: 'customer@hillandvalley.com', password: 'Customer@123', role: 'Customer' }
+    { name: 'Balaji', email: 'balaji@hillandvalley.com', password: 'Balaji@123', role: 'Super Admin' },
+    { name: 'Admin', email: 'admin@hillandvalley.com', password: 'Admin@123', role: 'Admin' },
+    { name: 'Accountant', email: 'accountant@hillandvalley.com', password: 'Accountant@123', role: 'Accountant' },
+    { name: 'Store', email: 'store@hillandvalley.com', password: 'Store@123', role: 'Store Manager' },
+    { name: 'Customer', email: 'customer@hillandvalley.com', password: 'Customer@123', role: 'Customer' }
   ];
 
   const createdUsers = [];
@@ -45,13 +47,22 @@ const seed = async () => {
 
   const createdStores = await Store.insertMany(stores);
 
+  const categoriesData = [
+    { name: 'Spices', description: 'Premium Spices' },
+    { name: 'Coconut Oil', description: 'Coconut-based oil products' },
+    { name: 'Herbal Products', description: 'Natural herbs and tea' }
+  ];
+
+  const createdCategories = await Category.insertMany(categoriesData);
+
   const products = [
     {
       name: 'Madurai Organic Cardamom',
       sku: 'HV-CARD-001',
       slug: 'madurai-organic-cardamom',
       description: 'Premium green cardamom sourced from the hill farms of Madurai.',
-      category: 'Spices',
+      category: createdCategories.find(c => c.name === 'Spices')._id,
+      categoryName: 'Spices',
       price: 625,
       offerPrice: 499,
       gst: 5,
@@ -67,7 +78,8 @@ const seed = async () => {
       sku: 'HV-COIL-001',
       slug: 'cold-pressed-coconut-oil',
       description: 'Nourishing coconut oil extracted through cold press for daily wellness.',
-      category: 'Coconut Oil',
+      category: createdCategories.find(c => c.name === 'Coconut Oil')._id,
+      categoryName: 'Coconut Oil',
       price: 420,
       offerPrice: 359,
       gst: 5,
@@ -83,7 +95,8 @@ const seed = async () => {
       sku: 'HV-HERB-001',
       slug: 'herbal-turmeric-chai-blend',
       description: 'A warming blend of turmeric, ginger, and local herbs for calming tea rituals.',
-      category: 'Herbal Products',
+      category: createdCategories.find(c => c.name === 'Herbal Products')._id,
+      categoryName: 'Herbal Products',
       price: 270,
       offerPrice: 225,
       gst: 5,
@@ -101,31 +114,49 @@ const seed = async () => {
   const order = new Order({
     user: createdUsers.find((u) => u.role === 'Customer')._id,
     store: createdStores[0]._id,
-    products: [
-      { product: createdProducts[0]._id, quantity: 2, price: 499 },
-      { product: createdProducts[2]._id, quantity: 1, price: 225 }
+    orderItems: [
+      { 
+        product: createdProducts[0]._id, 
+        name: createdProducts[0].name, 
+        quantity: 2, 
+        price: 499 
+      },
+      { 
+        product: createdProducts[2]._id, 
+        name: createdProducts[2].name, 
+        quantity: 1, 
+        price: 225 
+      }
     ],
-    subtotal: 1223,
-    tax: 61,
-    shipping: 50,
-    total: 1334,
-    status: 'confirmed',
-    paymentStatus: 'paid'
+    shippingAddress: {
+      street: '123 Main Street',
+      city: 'Madurai',
+      state: 'Tamil Nadu',
+      zipCode: '625001'
+    },
+    paymentMethod: 'COD',
+    itemsPrice: 1223,
+    taxPrice: 61,
+    shippingPrice: 50,
+    totalPrice: 1334,
+    isPaid: true,
+    paidAt: new Date(),
+    isDelivered: false,
+    status: 'Pending'
   });
   await order.save();
 
   const invoice = new Invoice({
     invoiceNumber: generateInvoiceNumber(),
     order: order._id,
-    user: order.user,
-    amount: 1334,
-    gst: 61,
-    paid: true,
+    customer: order.user,
+    store: order.store,
+    totalAmount: 1334,
+    taxAmount: 61,
+    status: 'Paid',
     pdfUrl: ''
   });
   await invoice.save();
-  order.invoice = invoice._id;
-  await order.save();
 
   const transaction = new Transaction({
     order: order._id,
