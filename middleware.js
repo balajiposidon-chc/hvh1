@@ -9,7 +9,10 @@ export async function middleware(request) {
   const { url, nextUrl } = request;
   
   // Retrieve token using next-auth helper
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  let token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  if (!token) {
+    token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, secureCookie: true });
+  }
   const hasVerifiedToken = !!token;
   const isAuthPageRequested = isAuthPages(nextUrl.pathname);
 
