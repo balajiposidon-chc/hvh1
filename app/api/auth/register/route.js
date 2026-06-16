@@ -38,6 +38,10 @@ export async function POST(request) {
         return NextResponse.json({ message: 'User created' }, { status: 201 });
     }
     catch (error) {
+        if (error.errors && Array.isArray(error.errors)) {
+            const msg = error.errors.map(err => err.message).join(', ');
+            return NextResponse.json({ message: msg }, { status: 400 });
+        }
         return NextResponse.json({ message: error?.message ?? 'Registration failed' }, { status: 400 });
     }
 }
