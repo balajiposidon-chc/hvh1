@@ -9,10 +9,10 @@ import { ShieldCheck, Leaf, Truck, ArrowRight, Globe } from 'lucide-react';
 
 export default async function HomePage() {
     await connectToDatabase();
-    const rawProducts = await Product.find({ status: { $in: ['active', 'Active'] } }).limit(6).lean();
-    const products = rawProducts.map(p => ({
+    const rawProducts = await Product.find({ status: { $in: ['active', 'Active'] } }).lean();
+    const serializedProducts = JSON.parse(JSON.stringify(rawProducts));
+    const products = serializedProducts.map(p => ({
         ...p,
-        _id: p._id.toString(),
         category: p.category ? p.category.toString() : '',
     }));
 
@@ -116,7 +116,7 @@ export default async function HomePage() {
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-end mb-5 gap-3">
               <div>
                 <span className="text-uppercase tracking-wider fw-bold text-cherry small d-block mb-1" style={{ letterSpacing: '2px' }}>Our Showcase</span>
-                <h2 className="fw-bold text-light m-0 display-5" style={{ fontFamily: "'Playfair Display', serif" }}>Featured Collections</h2>
+                <h2 className="fw-bold m-0 display-5" style={{ fontFamily: "'Playfair Display', serif" }}>Featured Collections</h2>
               </div>
               <Link href="/products" className="text-decoration-none text-cherry fw-semibold border-bottom border-cherry pb-1 d-inline-flex align-items-center gap-1">
                 View All Products <ArrowRight size={16} />

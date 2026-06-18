@@ -28,9 +28,9 @@ export default async function ProductsPage({ searchParams }) {
     }
 
     const rawProducts = await Product.find(query).populate('category').limit(40).lean();
-    const products = rawProducts.map(p => ({
+    const serializedProducts = JSON.parse(JSON.stringify(rawProducts));
+    const products = serializedProducts.map(p => ({
         ...p,
-        _id: p._id.toString(),
         category: p.category ? p.category.name : 'Spice',
         categoryName: p.category ? p.category.name : 'Spice',
     }));
@@ -47,7 +47,7 @@ export default async function ProductsPage({ searchParams }) {
                 <span className="text-uppercase tracking-wider fw-bold text-cherry fs-7 mb-1 d-block" style={{ letterSpacing: '2px' }}>
                   Hill & Valley Pantry
                 </span>
-                <h1 className="display-5 fw-bold text-light   m-0" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <h1 className="display-5 fw-bold m-0" style={{ fontFamily: "'Playfair Display', serif" }}>
                   Browse our Collections
                 </h1>
                 <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.95rem' }}>
