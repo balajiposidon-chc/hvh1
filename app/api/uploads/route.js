@@ -3,6 +3,9 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import cloudinaryService from '../../../services/cloudinary';
+
+const { uploadImage } = cloudinaryService;
 
 export async function POST(request) {
   try {
@@ -12,6 +15,24 @@ export async function POST(request) {
     if (!imageData) {
       return NextResponse.json({ message: 'Image data is required.' }, { status: 400 });
     }
+
+    // Check if Cloudinary is configured
+    const isCloudinaryConfigured = 
+      process.env.CLOUDINARY_CLOUD_NAME && 
+      process.env.CLOUDINARY_CLOUD_NAME !== 'your-cloud-name' &&
+      process.env.CLOUDINARY_API_KEY && 
+      process.env.CLOUDINARY_API_KEY !== 'your-cloudinary-key' &&
+      process.env.CLOUDINARY_API_SECRET && 
+      process.env.CLOUDINARY_API_SECRET !== 'your-cloudinary-secret';
+
+    if (isCloudinaryConfigured) {
+      console.log('Uploading image to Cloudinary...');
+      const uploadResult = await uploadImage(imageData);
+      console.log('Cloudinary upload success:', uploadResult.secure_url);
+      return NextResponse.json({ url: uploadResult.secure_url });
+    }
+
+    console.log('Cloudinary is not configured. Falling back to local upload...');
 
     // Match mime type and extract base64 encoded data
     const matches = imageData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
@@ -51,7 +72,8 @@ export async function POST(request) {
     const fileUrl = `/uploads/${filename}`;
     return NextResponse.json({ url: fileUrl });
   } catch (error) {
-    console.error('Local file upload error:', error);
-    return NextResponse.json({ message: 'Upload failed.' }, { status: 500 });
+    console.error('Image upload error:', error);
+    return NextResponse.json({ message: 'Upload failed.', error: error.message }, { status: 500 });
   }
 }
+
