@@ -484,10 +484,10 @@ export async function downloadInvoicePDF(order) {
       doc.text(item.hsnCode || '0908', pageWidth - 105, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'normal');
       doc.text(`${item.gstRate !== undefined ? item.gstRate : 5}%`, pageWidth - 85, currentY + 6, { align: 'center' });
-      doc.text(`₹${item.price.toLocaleString()}`, pageWidth - 63, currentY + 6, { align: 'right' });
+      doc.text(`Rs. ${item.price.toLocaleString()}`, pageWidth - 63, currentY + 6, { align: 'right' });
       doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 43, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'bold');
-      doc.text(`₹${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
+      doc.text(`Rs. ${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
       
       // Bottom border for row
       doc.setDrawColor(...borderGray);
@@ -509,15 +509,15 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'normal');
     
     doc.text("Subtotal:", summaryX, currentY);
-    doc.text(`₹${subtotal.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`Rs. ${subtotal.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 6;
 
     doc.text("Shipping Fee:", summaryX, currentY);
-    doc.text(`₹${shipping.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`Rs. ${shipping.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 6;
 
     doc.text("GST / Tax:", summaryX, currentY);
-    doc.text(`₹${tax.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`Rs. ${tax.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 8;
 
     // Total Row
@@ -529,7 +529,7 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'bold');
     
     doc.text("Total Amount:", summaryX, currentY);
-    doc.text(`₹${total.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`Rs. ${total.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
 
     // 5. Invoice Footer
     doc.setFontSize(8);
