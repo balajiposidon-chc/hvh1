@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import SiteHeader from '@/components/SiteHeader';
@@ -5,11 +7,25 @@ import ProductCard from '@/components/ProductCard';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import Setting from '@/lib/models/Setting';
-import { ShieldCheck, Leaf, Truck, ArrowRight, Globe } from 'lucide-react';
+import { ShieldCheck, Leaf, Truck, ArrowRight, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }) {
     await connectToDatabase();
-    const rawProducts = await Product.find({ status: { $in: ['active', 'Active'] } }).lean();
+    
+    const totalProducts = await Product.countDocuments({ status: { $in: ['active', 'Active'] } });
+    const limit = 9;
+    const totalPages = Math.ceil(totalProducts / limit);
+    
+    let page = parseInt(searchParams?.page) || 1;
+    if (page < 1) page = 1;
+    if (totalPages > 0 && page > totalPages) page = totalPages;
+
+    const skip = (page - 1) * limit;
+    const rawProducts = await Product.find({ status: { $in: ['active', 'Active'] } })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+        
     const serializedProducts = JSON.parse(JSON.stringify(rawProducts));
     const products = serializedProducts.map(p => ({
         ...p,
@@ -130,6 +146,70 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-5 animate__animated animate__fadeIn">
+                <nav aria-label="Product pagination">
+                  <ul className="pagination pagination-md justify-content-center gap-2 border-0">
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                      <Link
+                        href={`/?page=${page - 1}`}
+                        className="page-link rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          backgroundColor: 'var(--dynamic-card, #fff)',
+                          color: page === 1 ? 'var(--dynamic-text-muted, #ccc)' : 'var(--dynamic-primary, #D2143A)',
+                          transition: 'all 0.3s',
+                          pointerEvents: page === 1 ? 'none' : 'auto'
+                        }}
+                      >
+                        <ChevronLeft size={18} />
+                      </Link>
+                    </li>
+                    
+                    {[...Array(totalPages)].map((_, index) => {
+                      const p = index + 1;
+                      const isActive = p === page;
+                      return (
+                        <li key={p} className={`page-item ${isActive ? 'active' : ''}`}>
+                          <Link
+                            href={`/?page=${p}`}
+                            className="page-link rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center fw-semibold"
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              backgroundColor: isActive ? 'var(--dynamic-primary, #D2143A)' : 'var(--dynamic-card, #fff)',
+                              color: isActive ? '#fff' : 'var(--dynamic-font, #1A1A1A)',
+                              transition: 'all 0.3s'
+                            }}
+                          >
+                            {p}
+                          </Link>
+                        </li>
+                      );
+                    })}
+
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                      <Link
+                        href={`/?page=${page + 1}`}
+                        className="page-link rounded-circle border-0 shadow-sm d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          backgroundColor: 'var(--dynamic-card, #fff)',
+                          color: page === totalPages ? 'var(--dynamic-text-muted, #ccc)' : 'var(--dynamic-primary, #D2143A)',
+                          transition: 'all 0.3s',
+                          pointerEvents: page === totalPages ? 'none' : 'auto'
+                        }}
+                      >
+                        <ChevronRight size={18} />
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )}
           </div>
         </section>
 
