@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { motion } from 'framer-motion';
-import { IndianRupee, ShoppingCart, AlertTriangle, ArrowUp, Eye, Package, Shield, Store } from 'lucide-react';
+import { IndianRupee, ShoppingCart, AlertTriangle, ArrowUp, Eye, Package, Shield, Store, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 function StoreManagerDashboardContent() {
@@ -47,6 +47,28 @@ function StoreManagerDashboardContent() {
       setError('Failed to connect to the server.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteOrder = async (id) => {
+    if (!confirm('Are you sure you want to delete this order?')) return;
+    try {
+      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setStats(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            recentOrders: prev.recentOrders.filter(o => o._id !== id)
+          };
+        });
+      } else {
+        alert(data.message || 'Failed to delete order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server');
     }
   };
 
@@ -196,15 +218,21 @@ function StoreManagerDashboardContent() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {(() => {
+                              const d = new Date(order.createdAt);
+                              const day = String(d.getDate()).padStart(2, '0');
+                              const month = String(d.getMonth() + 1).padStart(2, '0');
+                              const year = d.getFullYear();
+                              return `${day}-${month}-${year}`;
+                            })()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
                               order.status === 'Delivered' 
-                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' 
-                                : order.status === 'Pending'
-                                  ? 'bg-amber-50 text-amber-600 border border-amber-200'
-                                  : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                ? 'bg-green-50 text-green-600 border border-green-200' 
+                                : order.status === 'Cancelled'
+                                  ? 'bg-red-50 text-red-600 border border-red-200'
+                                  : 'bg-yellow-50 text-yellow-600 border border-yellow-200'
                             }`}>
                               {order.status}
                             </span>
@@ -213,9 +241,19 @@ function StoreManagerDashboardContent() {
                             ₹{(order.totalPrice || order.total || 0).toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <Link href="/store-panel/orders" className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1 inline-block">
+                            <Link href={`/store-panel/orders?openId=${order._id}`} className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1 inline-block" title="View Details">
                               <Eye className="w-4 h-4" />
                             </Link>
+                            <Link href={`/store-panel/orders?openId=${order._id}`} className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1 inline-block" title="Edit Order">
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                            <button 
+                              onClick={() => handleDeleteOrder(order._id)}
+                              className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 inline-block cursor-pointer border-0 bg-transparent"
+                              title="Delete Order"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))

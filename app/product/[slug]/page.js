@@ -11,6 +11,7 @@ import CustomerLayout from '../../../components/CustomerLayout';
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { addToCart } = useCart();
   const { user } = useAuth() || {};
   const router = useRouter();
@@ -41,7 +42,28 @@ export default function ProductDetailPage() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto mt-16 max-w-6xl px-6 pb-16 md:px-12">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_0.7fr]">
           <div className="glass-card overflow-hidden p-0">
-            <img src={product.images?.[0] || 'https://res.cloudinary.com/demo/image/upload/v1680000000/spice.jpg'} alt={product.name} style={{ height: '420px', width: '100%', objectFit: 'cover' }} />
+            <img src={product.images?.[activeImageIndex] || 'https://res.cloudinary.com/demo/image/upload/v1680000000/spice.jpg'} alt={product.name} style={{ height: '420px', width: '100%', objectFit: 'cover' }} />
+            {product.images && product.images.length > 1 && (
+              <div className="d-flex gap-2 p-4 overflow-x-auto bg-light border-top justify-content-center">
+                {product.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className="border rounded overflow-hidden p-0 bg-transparent"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderColor: activeImageIndex === idx ? '#4f6f52' : '#E5E7EB',
+                      borderWidth: activeImageIndex === idx ? '2px' : '1px',
+                      transition: 'all 0.2s',
+                      outline: 'none'
+                    }}
+                  >
+                    <img src={img} alt={`${product.name} angle ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="p-10">
               <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-olive">{product.category}</div>
               <h1 className="mt-4 text-5xl font-semibold text-charcoal">{product.name}</h1>

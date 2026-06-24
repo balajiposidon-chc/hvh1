@@ -111,7 +111,8 @@ export async function GET(req) {
         activeOrders,
         totalCustomers,
         lowStockItems,
-        totalProducts
+        totalProducts,
+        totalOrders: orders.length
       },
       monthlyData,
       recentOrders,

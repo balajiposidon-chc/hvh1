@@ -13,6 +13,9 @@ function StoreProductsManagementContent() {
   const storeIdParam = searchParams.get('storeId');
 
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [sortBy, setSortBy] = useState('category-asc');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -23,9 +26,22 @@ function StoreProductsManagementContent() {
         router.push('/unauthorized');
       } else {
         fetchProducts();
+        fetchCategories();
       }
     }
   }, [user, permissions, router, storeIdParam]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      const data = await res.json();
+      if (data.success && data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error('Failed to load categories', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -59,10 +75,39 @@ function StoreProductsManagementContent() {
     }
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    let matchesCategory = true;
+    if (categoryFilter !== 'All Categories') {
+      const pCatName = p.category?.name || p.categoryName || '';
+      matchesCategory = pCatName.toLowerCase() === categoryFilter.toLowerCase();
+    }
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'category-asc') {
+      const catA = (a.category?.name || a.categoryName || '').toLowerCase();
+      const catB = (b.category?.name || b.categoryName || '').toLowerCase();
+      return catA.localeCompare(catB);
+    } else if (sortBy === 'category-desc') {
+      const catA = (a.category?.name || a.categoryName || '').toLowerCase();
+      const catB = (b.category?.name || b.categoryName || '').toLowerCase();
+      return catB.localeCompare(catA);
+    } else if (sortBy === 'name-asc') {
+      return (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'name-desc') {
+      return (b.name || '').localeCompare(a.name || '');
+    } else if (sortBy === 'price-asc') {
+      return (a.price || 0) - (b.price || 0);
+    } else if (sortBy === 'price-desc') {
+      return (b.price || 0) - (a.price || 0);
+    }
+    return 0;
+  });
 
   const isSuperAdmin = user?.role?.toLowerCase() === 'super admin' || user?.role?.toLowerCase() === 'superadmin';
   if (!user || (!permissions.includes('store-panel') && !isSuperAdmin)) return null;
@@ -83,8 +128,8 @@ function StoreProductsManagementContent() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden mb-12">
-        <div className="p-6 border-b border-neutral-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
-          <div className="relative w-full sm:w-96">
+        <div className="p-6 border-b border-neutral-100 flex flex-col lg:flex-row justify-between items-center gap-4 bg-white">
+          <div className="relative w-full lg:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input 
               type="text" 
@@ -93,6 +138,30 @@ function StoreProductsManagementContent() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
             />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            <select 
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 w-full sm:w-auto"
+            >
+              <option value="All Categories">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 w-full sm:w-auto"
+            >
+              <option value="category-asc">Sort: Category (A-Z)</option>
+              <option value="category-desc">Sort: Category (Z-A)</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="price-asc">Sort: Price (Low to High)</option>
+              <option value="price-desc">Sort: Price (High to Low)</option>
+            </select>
           </div>
         </div>
 
@@ -112,12 +181,12 @@ function StoreProductsManagementContent() {
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">Loading products...</td>
                 </tr>
-              ) : filteredProducts.length === 0 ? (
+              ) : sortedProducts.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">No products found.</td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => (
+                sortedProducts.map((product) => (
                   <tr key={product._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">

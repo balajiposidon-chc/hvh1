@@ -20,15 +20,7 @@ export async function GET() {
     await Product.deleteMany({});
     await Expense.deleteMany({});
 
-    // 1. Seed Stores
-    const storesData = [
-      { name: 'Hill & Valley Madurai', location: 'Madurai, TN' },
-      { name: 'Hill & Valley Coimbatore', location: 'Coimbatore, TN' },
-      { name: 'Hill & Valley Chennai', location: 'Chennai, TN' },
-    ];
-    const createdStores = await Store.insertMany(storesData);
-
-    // 2. Seed Users
+    // 1. Seed Users first
     const hashedPassword = await bcrypt.hash('Balaji@123', 10);
     const adminPassword = await bcrypt.hash('Admin@123', 10);
     const accountantPassword = await bcrypt.hash('Accountant@123', 10);
@@ -39,10 +31,19 @@ export async function GET() {
       { name: 'Balaji', email: 'balaji@hillandvalley.com', password: hashedPassword, role: 'Super Admin' },
       { name: 'Admin User', email: 'admin@hillandvalley.com', password: adminPassword, role: 'Admin' },
       { name: 'Accountant User', email: 'accountant@hillandvalley.com', password: accountantPassword, role: 'Accountant' },
-      { name: 'Store Manager', email: 'store@hillandvalley.com', password: storePassword, role: 'Store Manager', storeId: createdStores[0]._id },
+      { name: 'Store Manager', email: 'store@hillandvalley.com', password: storePassword, role: 'Store Manager' },
       { name: 'Customer User', email: 'customer@hillandvalley.com', password: customerPassword, role: 'Customer' }
     ];
     const createdUsers = await User.insertMany(usersData);
+    const storeManagerUser = createdUsers.find(u => u.email === 'store@hillandvalley.com');
+
+    // 2. Seed Stores with Manager
+    const storesData = [
+      { name: 'Hill & Valley Madurai', location: 'Madurai, TN', manager: storeManagerUser._id, contactNumber: '+919876543210', email: 'madurai@hillandvalley.com' },
+      { name: 'Hill & Valley Coimbatore', location: 'Coimbatore, TN', manager: null, contactNumber: '+919876543211', email: 'coimbatore@hillandvalley.com' },
+      { name: 'Hill & Valley Chennai', location: 'Chennai, TN', manager: null, contactNumber: '+919876543212', email: 'chennai@hillandvalley.com' },
+    ];
+    const createdStores = await Store.insertMany(storesData);
 
     // 3. Seed Categories
     const categoriesData = [
@@ -55,7 +56,7 @@ export async function GET() {
     ];
     const createdCategories = await Category.insertMany(categoriesData);
 
-    // 4. Seed Products
+    // 4. Seed Products with Store
     const productsData = [
       {
         name: 'Premium Cardamom',
@@ -67,7 +68,8 @@ export async function GET() {
         stock: 150,
         weight: '100g',
         category: createdCategories.find(c => c.name === 'Spices')._id,
-        images: ['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80']
+        images: ['https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        store: createdStores[0]._id
       },
       {
         name: 'Organic Turmeric Powder',
@@ -79,7 +81,8 @@ export async function GET() {
         stock: 300,
         weight: '250g',
         category: createdCategories.find(c => c.name === 'Spices')._id,
-        images: ['https://images.unsplash.com/photo-1615486171448-433b9138f265?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80']
+        images: ['https://images.unsplash.com/photo-1615486171448-433b9138f265?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        store: createdStores[0]._id
       },
       {
         name: 'Cold Pressed Coconut Oil',
@@ -91,7 +94,8 @@ export async function GET() {
         stock: 100,
         weight: '1L',
         category: createdCategories.find(c => c.name === 'Coconut Oil')._id,
-        images: ['https://images.unsplash.com/photo-1628156681099-3174dc0fc386?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80']
+        images: ['https://images.unsplash.com/photo-1628156681099-3174dc0fc386?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        store: createdStores[0]._id
       },
       {
         name: 'Desiccated Coconut Powder',
@@ -103,7 +107,8 @@ export async function GET() {
         stock: 200,
         weight: '500g',
         category: createdCategories.find(c => c.name === 'Coconut Powder')._id,
-        images: ['https://images.unsplash.com/photo-1550605763-ebf29f0e1fb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80']
+        images: ['https://images.unsplash.com/photo-1550605763-ebf29f0e1fb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        store: createdStores[0]._id
       }
     ];
     await Product.insertMany(productsData);

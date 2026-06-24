@@ -39,10 +39,12 @@ const seed = async () => {
     createdUsers.push(record);
   }
 
+  const storeManagerUser = createdUsers.find(u => u.email === 'store@hillandvalley.com');
+
   const stores = [
-    { name: 'Hill & Valley Madurai', location: 'Madurai, Tamil Nadu', managerEmail: 'store@hillandvalley.com', revenue: 128400 },
-    { name: 'Hill & Valley Coimbatore', location: 'Coimbatore, Tamil Nadu', managerEmail: 'store@hillandvalley.com', revenue: 102500 },
-    { name: 'Hill & Valley Chennai', location: 'Chennai, Tamil Nadu', managerEmail: 'store@hillandvalley.com', revenue: 147300 }
+    { name: 'Hill & Valley Madurai', location: 'Madurai, Tamil Nadu', manager: storeManagerUser._id, contactNumber: '+919876543210', email: 'madurai@hillandvalley.com', revenue: 128400 },
+    { name: 'Hill & Valley Coimbatore', location: 'Coimbatore, Tamil Nadu', manager: null, contactNumber: '+919876543211', email: 'coimbatore@hillandvalley.com', revenue: 102500 },
+    { name: 'Hill & Valley Chennai', location: 'Chennai, Tamil Nadu', manager: null, contactNumber: '+919876543212', email: 'chennai@hillandvalley.com', revenue: 147300 }
   ];
 
   const createdStores = await Store.insertMany(stores);
@@ -109,7 +111,8 @@ const seed = async () => {
     }
   ];
 
-  const createdProducts = await Product.insertMany(products);
+  const productsWithStore = products.map(p => ({ ...p, store: createdStores[0]._id }));
+  const createdProducts = await Product.insertMany(productsWithStore);
 
   const order = new Order({
     user: createdUsers.find((u) => u.role === 'Customer')._id,
@@ -134,6 +137,7 @@ const seed = async () => {
       state: 'Tamil Nadu',
       zipCode: '625001'
     },
+    phone: '+919876543210',
     paymentMethod: 'COD',
     itemsPrice: 1223,
     taxPrice: 61,

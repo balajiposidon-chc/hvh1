@@ -104,6 +104,18 @@ export default function StoresManagement() {
       setError('Name and Location are required.');
       return;
     }
+    if (!contactNumber.trim()) {
+      setError('Contact Phone is required.');
+      return;
+    }
+    if (!email.trim()) {
+      setError('Store Email is required.');
+      return;
+    }
+    if (!manager) {
+      setError('Assigning a Store Manager is required.');
+      return;
+    }
     setError('');
     setMessage('');
     setSubmitting(true);
@@ -342,7 +354,7 @@ export default function StoresManagement() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label text-neutral-700 small fw-semibold">Contact Phone</label>
+                  <label className="form-label text-neutral-700 small fw-semibold">Contact Phone *</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input 
@@ -351,11 +363,12 @@ export default function StoresManagement() {
                       onChange={(e) => setContactNumber(e.target.value)}
                       placeholder="e.g. +91 9876543210"
                       className="form-control rounded-xl pl-10 pr-3 py-3 bg-neutral-50 border-0 text-sm text-neutral-900"
+                      required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="form-label text-neutral-700 small fw-semibold">Store Email</label>
+                  <label className="form-label text-neutral-700 small fw-semibold">Store Email *</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input 
@@ -364,6 +377,7 @@ export default function StoresManagement() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. chennai@hillandvalley.com"
                       className="form-control rounded-xl pl-10 pr-3 py-3 bg-neutral-50 border-0 text-sm text-neutral-900"
+                      required
                     />
                   </div>
                 </div>
@@ -382,13 +396,14 @@ export default function StoresManagement() {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label text-neutral-700 small fw-semibold">Assign Store Manager</label>
+                  <label className="form-label text-neutral-700 small fw-semibold">Assign Store Manager *</label>
                   <select 
                     value={manager}
                     onChange={(e) => setManager(e.target.value)}
                     className="form-select rounded-xl p-3 bg-neutral-50 border-0 text-sm outline-none w-full text-neutral-900"
+                    required
                   >
-                    <option value="">None (Unassigned)</option>
+                    <option value="">Select Manager...</option>
                     {users
                       .filter(u => ['store manager', 'manager', 'admin', 'super admin'].includes(u.role?.toLowerCase()))
                       .map((u) => (

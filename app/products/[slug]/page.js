@@ -13,6 +13,24 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [currency, setCurrency] = useState('INR');
+
+  useEffect(() => {
+    const updateCurrency = () => {
+      setCurrency(localStorage.getItem('hill-currency') || 'INR');
+    };
+    updateCurrency();
+    window.addEventListener('currencyChange', updateCurrency);
+    return () => window.removeEventListener('currencyChange', updateCurrency);
+  }, []);
+
+  const formatCurrency = (amount) => {
+    if (currency === 'USD') {
+      return `$${(amount / 83).toFixed(2)}`;
+    }
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
   const { addToCart } = useCart();
   const router = useRouter();
   const params = useParams();
@@ -98,7 +116,7 @@ export default function ProductDetailPage() {
             <div className="bg-white p-3 rounded-4 shadow-sm border border-light overflow-hidden">
               <div className="position-relative rounded-3 overflow-hidden bg-light" style={{ height: '450px' }}>
                 <img 
-                  src={product.images?.[0] ?? '/placeholder.png'} 
+                  src={product.images?.[activeImageIndex] ?? '/placeholder.png'} 
                   alt={product.name} 
                   style={{ height: '450px', width: '100%', objectFit: 'cover' }}
                 />
@@ -108,6 +126,29 @@ export default function ProductDetailPage() {
                   </span>
                 )}
               </div>
+
+              {/* Multi-angle image thumbnails */}
+              {product.images && product.images.length > 1 && (
+                <div className="d-flex gap-2 mt-3 overflow-auto pb-2 justify-content-center">
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIndex(idx)}
+                      className="border rounded-3 overflow-hidden p-0 bg-transparent"
+                      style={{
+                        width: '70px',
+                        height: '70px',
+                        borderColor: activeImageIndex === idx ? 'var(--cherry)' : '#E5E7EB',
+                        borderWidth: activeImageIndex === idx ? '2px' : '1px',
+                        transition: 'all 0.2s',
+                        outline: 'none'
+                      }}
+                    >
+                      <img src={img} alt={`${product.name} angle ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Quality Badges */}
               <div className="row g-3 mt-3 text-center">
@@ -162,14 +203,14 @@ export default function ProductDetailPage() {
                 {/* Price Panel */}
                 <div className="mb-4">
                   <div className="d-flex align-items-end gap-3">
-                    <span className="display-5 fw-bold text-cherry" style={{ lineHeight: 1 }}>₹{displayPrice} <span className="text-muted" style={{ fontSize: '1rem', fontWeight: 'normal' }}>/ {product.unit || 'piece'}</span></span>
+                    <span className="display-5 fw-bold text-cherry" style={{ lineHeight: 1 }}>{formatCurrency(displayPrice)} <span className="text-muted" style={{ fontSize: '1rem', fontWeight: 'normal' }}>/ {product.unit || 'piece'}</span></span>
                     {originalPrice && (
-                      <span className="fs-5 text-muted text-decoration-line-through mb-1">₹{originalPrice}</span>
+                      <span className="fs-5 text-muted text-decoration-line-through mb-1">{formatCurrency(originalPrice)}</span>
                     )}
                   </div>
                   {originalPrice && (
                     <p className="text-success small fw-semibold mt-2 mb-0">
-                      ✓ Inclusive of all taxes (You Save ₹{savings}!)
+                      ✓ Inclusive of all taxes (You Save {formatCurrency(savings)}!)
                     </p>
                   )}
                 </div>

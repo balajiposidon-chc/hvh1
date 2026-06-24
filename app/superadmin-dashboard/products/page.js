@@ -11,6 +11,11 @@ export default function ProductsManagement() {
   const { user, permissions = [] } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [sortBy, setSortBy] = useState('category-asc');
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,9 +25,22 @@ export default function ProductsManagement() {
         router.push('/');
       } else {
         fetchProducts();
+        fetchCategories();
       }
     }
   }, [user, permissions, router]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      const data = await res.json();
+      if (data.success && data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error('Failed to load categories', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -54,7 +72,51 @@ export default function ProductsManagement() {
     }
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, sortBy]);
+
   if (!user) return null;
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (product.sku || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesCategory = true;
+    if (categoryFilter !== 'All Categories') {
+      const pCatName = product.category?.name || product.categoryName || '';
+      matchesCategory = pCatName.toLowerCase() === categoryFilter.toLowerCase();
+    }
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'category-asc') {
+      const catA = (a.category?.name || a.categoryName || '').toLowerCase();
+      const catB = (b.category?.name || b.categoryName || '').toLowerCase();
+      return catA.localeCompare(catB);
+    } else if (sortBy === 'category-desc') {
+      const catA = (a.category?.name || a.categoryName || '').toLowerCase();
+      const catB = (b.category?.name || b.categoryName || '').toLowerCase();
+      return catB.localeCompare(catA);
+    } else if (sortBy === 'name-asc') {
+      return (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'name-desc') {
+      return (b.name || '').localeCompare(a.name || '');
+    } else if (sortBy === 'price-asc') {
+      return (a.price || 0) - (b.price || 0);
+    } else if (sortBy === 'price-desc') {
+      return (b.price || 0) - (a.price || 0);
+    }
+    return 0;
+  });
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   return (
     <AdminLayout>
@@ -78,15 +140,33 @@ export default function ProductsManagement() {
             <input 
               type="text" 
               placeholder="Search products by name, SKU..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
             />
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <select className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 w-full sm:w-auto">
-              <option>All Categories</option>
-              <option>Spices</option>
-              <option>Coconut</option>
-              <option>Herbal</option>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <select 
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 w-full sm:w-auto"
+            >
+              <option value="All Categories">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 w-full sm:w-auto"
+            >
+              <option value="category-asc">Sort: Category (A-Z)</option>
+              <option value="category-desc">Sort: Category (Z-A)</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="price-asc">Sort: Price (Low to High)</option>
+              <option value="price-desc">Sort: Price (High to Low)</option>
             </select>
           </div>
         </div>
@@ -95,11 +175,11 @@ export default function ProductsManagement() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-neutral-50/50">
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Product Info</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-800 uppercase tracking-wider">Product Info</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-800 uppercase tracking-wider">SKU</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
@@ -107,12 +187,12 @@ export default function ProductsManagement() {
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">Loading products...</td>
                 </tr>
-              ) : products.length === 0 ? (
+              ) : currentProducts.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">No products found.</td>
                 </tr>
               ) : (
-                products.map((product) => (
+                currentProducts.map((product) => (
                   <tr key={product._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
@@ -183,11 +263,25 @@ export default function ProductsManagement() {
           </table>
         </div>
         <div className="p-4 border-t border-neutral-100 flex justify-between items-center text-sm text-neutral-500 bg-neutral-50/30">
-          <span>Showing {products.length} products</span>
+          <span>
+            Showing {filteredProducts.length === 0 ? 0 : indexOfFirstProduct + 1} - {Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+          </span>
           <div className="flex gap-1">
-            <button className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50">Prev</button>
-            <button className="px-3 py-1 rounded-md bg-primary text-white font-medium">1</button>
-            <button className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50">Next</button>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button className="px-3 py-1 rounded-md bg-primary text-white font-medium">{currentPage}</button>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

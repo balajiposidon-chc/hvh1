@@ -19,6 +19,7 @@ export default function AdminProductForm({ initialData, action }) {
         featured: initialData?.featured || false,
         store: initialData?.store || '',
         unit: initialData?.unit || 'piece',
+        weight: initialData?.weight || '',
         hsnCode: initialData?.hsnCode || '',
         gstRate: initialData?.gstRate || '5',
         culinaryUses: initialData?.culinaryUses || '',
@@ -31,6 +32,8 @@ export default function AdminProductForm({ initialData, action }) {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [categories, setCategories] = useState([]);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [changedFieldsList, setChangedFieldsList] = useState([]);
 
     useEffect(() => {
         async function fetchCategories() {
@@ -222,6 +225,44 @@ export default function AdminProductForm({ initialData, action }) {
             gstRate: Number(form.gstRate),
             images: form.images.split(',').map((item) => item.trim()).filter(Boolean),
         };
+        
+        // Track changed fields
+        if (action !== 'create') {
+            const fields = [
+                { key: 'name', label: 'Product Name' },
+                { key: 'slug', label: 'Slug / URL Path' },
+                { key: 'description', label: 'Description' },
+                { key: 'price', label: 'Standard Price' },
+                { key: 'discountPrice', label: 'Discounted Price' },
+                { key: 'category', label: 'Category' },
+                { key: 'brand', label: 'Brand Name' },
+                { key: 'stock', label: 'Stock Level' },
+                { key: 'images', label: 'Product Images' },
+                { key: 'status', label: 'Status' },
+                { key: 'featured', label: 'Featured Switch' },
+                { key: 'store', label: 'Assigned Store' },
+                { key: 'unit', label: 'Selling Unit' },
+                { key: 'weight', label: 'Product Weight' },
+                { key: 'hsnCode', label: 'HSN Code' },
+                { key: 'gstRate', label: 'GST Rate (%)' },
+                { key: 'culinaryUses', label: 'Culinary Uses' },
+                { key: 'storageCare', label: 'Storage & Care' },
+                { key: 'sourcingGuarantee', label: 'Sourcing Guarantee' },
+                { key: 'allergenSafety', label: 'Allergen & Safety' }
+            ];
+            const changed = [];
+            fields.forEach(({ key, label }) => {
+                const initialVal = initialData?.[key] !== undefined && initialData?.[key] !== null ? String(initialData[key]).trim() : '';
+                const currentVal = form[key] !== undefined && form[key] !== null ? String(form[key]).trim() : '';
+                if (initialVal !== currentVal) {
+                    changed.push(label);
+                }
+            });
+            setChangedFieldsList(changed);
+        } else {
+            setChangedFieldsList([]);
+        }
+
         const url = action === 'create' ? '/api/admin/products' : `/api/admin/products/${initialData?.id}`;
         const method = action === 'create' ? 'POST' : 'PUT';
         const response = await fetch(url, {
@@ -235,48 +276,51 @@ export default function AdminProductForm({ initialData, action }) {
             setError(data.message || 'Unable to save product');
             return;
         }
-        setMessage('Product saved successfully.');
+        setShowSuccessModal(true);
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Name</span>
+                    <span className="text-sm text-slate-700 font-semibold">Name <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.name} onChange={(e) => handleChange('name', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700">Slug</span>
+                    <span className="text-sm text-slate-700 font-semibold">Slug <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.slug} onChange={(e) => handleChange('slug', e.target.value)} required />
                 </label>
             </div>
             
             <label className="block">
-                <span className="text-sm text-slate-700">Description</span>
-                <textarea value={form.description} onChange={(e) => handleChange('description', e.target.value)} rows={5} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none" required />
+                <span className="text-sm text-slate-700 font-semibold">Description <span className="text-red-500 font-bold">*</span></span>
+                <textarea value={form.description} onChange={(e) => handleChange('description', e.target.value)} rows={5} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none mt-2" required />
             </label>
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Price</span>
-                    <Input type="number" value={form.price} onChange={(e) => handleChange('price', e.target.value)} required />
+                    <span className="text-sm text-slate-700 font-semibold">Price <span className="text-red-500 font-bold">*</span></span>
+                    <Input type="text" value={form.price} onChange={(e) => handleChange('price', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700">Discount price</span>
-                    <Input type="number" value={form.discountPrice} onChange={(e) => handleChange('discountPrice', e.target.value)} />
+                    <span className="text-sm text-slate-700 font-semibold">Discount price</span>
+                    <Input type="text" value={form.discountPrice} onChange={(e) => handleChange('discountPrice', e.target.value)} />
                 </label>
             </div>
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Category</span>
-                    <Input 
-                        list="category-list"
-                        value={form.category} 
-                        onChange={(e) => handleChange('category', e.target.value)} 
-                        placeholder="Select or type a category..."
-                        required 
-                    />
+                    <span className="text-sm text-slate-700 font-semibold">Category <span className="text-red-500 font-bold">*</span></span>
+                    <div className="mt-2 relative">
+                        <Input 
+                            list="category-list"
+                            value={form.category} 
+                            onChange={(e) => handleChange('category', e.target.value)} 
+                            placeholder="Select or type a category..."
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                            required 
+                        />
+                    </div>
                     <datalist id="category-list">
                         {categories.map((cat) => (
                             <option key={cat._id} value={cat.name} />
@@ -284,18 +328,18 @@ export default function AdminProductForm({ initialData, action }) {
                     </datalist>
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700">Brand</span>
+                    <span className="text-sm text-slate-700 font-semibold">Brand <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.brand} onChange={(e) => handleChange('brand', e.target.value)} required />
                 </label>
             </div>
             
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Stock</span>
-                    <Input type="number" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
+                    <span className="text-sm text-slate-700 font-semibold">Stock <span className="text-red-500 font-bold">*</span></span>
+                    <Input type="text" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700">Quantity Unit</span>
+                    <span className="text-sm text-slate-700 font-semibold">Quantity Unit <span className="text-red-500 font-bold">*</span></span>
                     <select
                         value={form.unit}
                         onChange={(e) => handleChange('unit', e.target.value)}
@@ -311,15 +355,19 @@ export default function AdminProductForm({ initialData, action }) {
                         <option value="pack">Pack</option>
                     </select>
                 </label>
+                <label className="block">
+                    <span className="text-sm text-slate-700 font-semibold">Package Capacity / Weight</span>
+                    <Input type="text" value={form.weight} onChange={(e) => handleChange('weight', e.target.value)} placeholder="e.g. 200g, 250g, 1L" />
+                </label>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">HSN Code</span>
+                    <span className="text-sm text-slate-700 font-semibold">HSN Code</span>
                     <Input value={form.hsnCode} onChange={(e) => handleChange('hsnCode', e.target.value)} placeholder="e.g. 0908" />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700">GST Rate (%)</span>
+                    <span className="text-sm text-slate-700 font-semibold">GST Rate (%) <span className="text-red-500 font-bold">*</span></span>
                     <select
                         value={form.gstRate}
                         onChange={(e) => handleChange('gstRate', e.target.value)}
@@ -336,8 +384,8 @@ export default function AdminProductForm({ initialData, action }) {
             </div>
             
             <div className="space-y-1">
-                <span className="text-sm text-slate-700 block">Product Images</span>
-                <label className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50">
+                <span className="text-sm text-slate-700 block font-semibold">Product Images</span>
+                <label className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50 mt-2">
                     <span className="text-sm font-semibold text-slate-600 flex items-center gap-2 select-none">
                         {uploading ? (
                             <>
@@ -357,7 +405,7 @@ export default function AdminProductForm({ initialData, action }) {
 
             <div className="space-y-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Image URLs (comma-separated)</span>
+                    <span className="text-sm text-slate-700 font-semibold">Image URLs</span>
                     <Input value={form.images} onChange={(e) => handleChange('images', e.target.value)} placeholder="e.g. /uploads/image.png, https://..." />
                 </label>
                 
@@ -384,10 +432,10 @@ export default function AdminProductForm({ initialData, action }) {
             </div>
 
             <div className="space-y-4 border-t border-slate-100 pt-6">
-                <span className="font-semibold text-slate-800 text-sm block">Cooking Tips & Recommendations</span>
+                <span className="text-xl font-bold text-neutral-900 border-b border-neutral-100 pb-2 mb-4 block">Cooking Tips & Recommendations</span>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                        <span className="text-sm text-slate-700">Suggested Culinary Uses</span>
+                        <span className="text-sm text-slate-700 font-semibold">Suggested Culinary Uses</span>
                         <textarea
                             value={form.culinaryUses}
                             onChange={(e) => handleChange('culinaryUses', e.target.value)}
@@ -397,7 +445,7 @@ export default function AdminProductForm({ initialData, action }) {
                         />
                     </label>
                     <label className="block">
-                        <span className="text-sm text-slate-700">Storage & Care</span>
+                        <span className="text-sm text-slate-700 font-semibold">Storage & Care</span>
                         <textarea
                             value={form.storageCare}
                             onChange={(e) => handleChange('storageCare', e.target.value)}
@@ -409,7 +457,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                        <span className="text-sm text-slate-700">Authentic Sourcing Guarantee</span>
+                        <span className="text-sm text-slate-700 font-semibold">Authentic Sourcing Guarantee</span>
                         <textarea
                             value={form.sourcingGuarantee}
                             onChange={(e) => handleChange('sourcingGuarantee', e.target.value)}
@@ -419,7 +467,7 @@ export default function AdminProductForm({ initialData, action }) {
                         />
                     </label>
                     <label className="block">
-                        <span className="text-sm text-slate-700">Allergen Safety</span>
+                        <span className="text-sm text-slate-700 font-semibold">Allergen Safety</span>
                         <textarea
                             value={form.allergenSafety}
                             onChange={(e) => handleChange('allergenSafety', e.target.value)}
@@ -433,7 +481,7 @@ export default function AdminProductForm({ initialData, action }) {
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700">Status</span>
+                    <span className="text-sm text-slate-700 font-semibold">Status <span className="text-red-500 font-bold">*</span></span>
                     <select value={form.status} onChange={(e) => handleChange('status', e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none">
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -441,7 +489,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </label>
                 <label className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 mt-2 sm:mt-0 cursor-pointer select-none">
                     <input type="checkbox" checked={form.featured} onChange={(e) => handleChange('featured', e.target.checked)} className="h-4 w-4" />
-                    <span className="text-sm text-slate-700">Featured product</span>
+                    <span className="text-sm text-slate-700 font-semibold">Featured product</span>
                 </label>
             </div>
             
@@ -449,6 +497,48 @@ export default function AdminProductForm({ initialData, action }) {
             {message && <p className="text-sm text-emerald-600">{message}</p>}
             
             <Button type="submit" disabled={loading}>{action === 'create' ? 'Create product' : 'Save changes'}</Button>
+
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-neutral-100 text-center space-y-6">
+                        <div className="mx-auto w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-100">
+                            <span className="text-3xl font-extrabold">✓</span>
+                        </div>
+                        <div>
+                            <h4 className="text-2xl font-extrabold text-neutral-950">Success!</h4>
+                            <p className="text-neutral-500 text-sm mt-2">
+                                {action === 'create' ? 'Product created successfully' : 'Product updated successfully'}
+                            </p>
+                            {changedFieldsList.length > 0 ? (
+                                <div className="text-left bg-neutral-50 p-4 rounded-2xl border border-neutral-100 max-h-40 overflow-y-auto text-xs mt-3">
+                                    <span className="font-semibold text-neutral-700 d-block mb-1.5">Modified Fields:</span>
+                                    <ul className="list-disc pl-4 space-y-1 text-neutral-600">
+                                        {changedFieldsList.map((f, i) => (
+                                            <li key={i}>{f}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : (
+                                action !== 'create' && (
+                                    <p className="text-xs text-neutral-400 mt-2 italic">No fields were modified.</p>
+                                )
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                const storeId = initialData?.store || '';
+                                const basePath = window.location.pathname.startsWith('/store-panel') ? '/store-panel/products' : '/superadmin-dashboard/products';
+                                window.location.href = storeId ? `${basePath}?storeId=${storeId}` : basePath;
+                            }}
+                            className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 border-0 cursor-pointer"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </form>
     );
 }

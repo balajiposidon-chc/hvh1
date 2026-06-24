@@ -24,13 +24,36 @@ export async function POST(request) {
                 return NextResponse.json({ message: 'Phone number is already registered' }, { status: 400 });
             }
         }
+        let parsedAddress = {
+            street: parsed.address || '',
+            city: '',
+            state: '',
+            zipCode: ''
+        };
+        if (typeof parsed.address === 'string' && parsed.address.trim() !== '') {
+            const parts = parsed.address.split(',').map(p => p.trim());
+            if (parts.length >= 4) {
+                parsedAddress.street = parts.slice(0, parts.length - 3).join(', ');
+                parsedAddress.city = parts[parts.length - 3];
+                parsedAddress.state = parts[parts.length - 2];
+                parsedAddress.zipCode = parts[parts.length - 1];
+            } else if (parts.length === 3) {
+                parsedAddress.street = parts[0];
+                parsedAddress.city = parts[1];
+                parsedAddress.state = parts[2];
+            } else if (parts.length === 2) {
+                parsedAddress.street = parts[0];
+                parsedAddress.city = parts[1];
+            }
+        }
+
         const hashed = await bcryptjs.hash(parsed.password, 10);
         const user = new User({
             name: parsed.name,
             email: parsed.email.toLowerCase(),
             password: hashed,
             phone: parsed.phone || '',
-            address: parsed.address || '',
+            address: parsedAddress,
             role: 'Customer',
             status: 'active',
         });

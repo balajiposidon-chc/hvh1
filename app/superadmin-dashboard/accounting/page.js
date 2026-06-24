@@ -125,6 +125,19 @@ export default function AccountingManagement() {
     { name: 'May', revenue: Math.round((data.summary.totalRevenue || 0) / 10), expense: Math.round((data.summary.totalExpenses || 0) / 10) },
   ];
 
+  const groupedExpenses = (data.expenses || []).reduce((acc, expense) => {
+    const category = expense.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = {
+        expenses: [],
+        subtotal: 0
+      };
+    }
+    acc[category].expenses.push(expense);
+    acc[category].subtotal += expense.amount || 0;
+    return acc;
+  }, {});
+
   if (!user) return null;
 
   return (
@@ -197,23 +210,33 @@ export default function AccountingManagement() {
           <div className="p-6 border-b border-neutral-100">
             <h5 className="text-xl font-bold text-neutral-900 mb-0">Recent Expenses</h5>
           </div>
-          <div className="p-0 overflow-y-auto flex-1 max-h-[300px]">
+          <div className="p-4 overflow-y-auto flex-1 max-h-[300px]">
             {loading ? (
-              <p className="p-6 text-center text-neutral-500">Loading expenses...</p>
+              <p className="p-2 text-center text-neutral-500">Loading expenses...</p>
             ) : data.expenses.length === 0 ? (
-              <p className="p-6 text-center text-neutral-500">No recent expenses found.</p>
+              <p className="p-2 text-center text-neutral-500">No recent expenses found.</p>
             ) : (
-              <ul className="divide-y divide-neutral-100">
-                {data.expenses.map(expense => (
-                  <li key={expense._id} className="p-4 flex justify-between items-center hover:bg-neutral-50/50 transition-colors">
-                    <div>
-                      <p className="font-bold text-neutral-900">{expense.title}</p>
-                      <p className="text-xs text-neutral-500">{expense.category} • {new Date(expense.date).toLocaleDateString()}</p>
+              <div className="space-y-4">
+                {Object.entries(groupedExpenses).map(([category, group]) => (
+                  <div key={category} className="border border-neutral-100 rounded-xl overflow-hidden bg-neutral-50/50">
+                    <div className="px-4 py-2.5 bg-neutral-100/70 border-b border-neutral-100 flex justify-between items-center">
+                      <span className="font-bold text-xs uppercase tracking-wider text-neutral-600">{category}</span>
+                      <span className="font-bold text-xs text-red-600">Subtotal: -₹{group.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <span className="font-bold text-red-500">-₹{expense.amount}</span>
-                  </li>
+                    <ul className="divide-y divide-neutral-100 bg-white mb-0 pl-0">
+                      {group.expenses.map(expense => (
+                        <li key={expense._id} className="px-4 py-3 flex justify-between items-center hover:bg-neutral-50/20 transition-colors">
+                          <div>
+                            <p className="font-bold text-neutral-900 text-sm mb-0.5">{expense.title}</p>
+                            <p className="text-muted mb-0" style={{ fontSize: '0.7rem' }}>{new Date(expense.date).toLocaleDateString('en-IN')}</p>
+                          </div>
+                          <span className="font-bold text-red-500 text-sm">-₹{expense.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </div>

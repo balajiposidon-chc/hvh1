@@ -62,6 +62,7 @@ export async function PUT(request, { params }) {
         storageCare: body.storageCare,
         sourcingGuarantee: body.sourcingGuarantee,
         allergenSafety: body.allergenSafety,
+        weight: body.weight,
     };
 
     // If Super Admin specifies a store, allow changing it

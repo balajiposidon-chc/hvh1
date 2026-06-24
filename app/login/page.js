@@ -26,7 +26,7 @@ export default function LoginPage() {
         if (result?.error) {
             setError(result.error);
         } else {
-            window.location.href = '/profile';
+            window.location.href = '/products';
         }
     };
 
@@ -45,16 +45,16 @@ export default function LoginPage() {
               <ArrowLeft size={16} /> Back to Home
             </Link>
 
-            <div className="glass-card p-4 p-md-5 bg-white">
+            <div className="glass-card p-4 p-md-5 bg-white shadow-lg border-0" style={{ borderRadius: '24px' }}>
               <div className="text-center mb-4">
                 <img 
                   src="/logo.jpg" 
                   alt="Hill & Valley" 
-                  className="rounded-circle object-cover border border-3 mb-3 mx-auto d-block" 
+                  className="rounded-circle object-cover border border-3 mb-3 mx-auto d-block shadow-sm" 
                   style={{ height: '90px', width: '90px', borderColor: 'var(--gold-accent)' }} 
                 />
                 <h1 className="fw-bold text-dark m-0" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Welcome Back
+                  Welcome
                 </h1>
                 <p className="text-muted small mt-2">
                   Access your profile, orders, and checkout securely.
@@ -77,6 +77,11 @@ export default function LoginPage() {
                       style={{ outline: 'none', border: 'none', fontSize: '0.9rem' }}
                     />
                   </div>
+                  {error && (
+                    <div className="text-danger small mt-1 ps-2 fw-semibold" style={{ fontSize: '0.85rem' }}>
+                      {error}
+                    </div>
+                  )}
                 </div>
 
                 {/* Password Input */}
@@ -95,12 +100,6 @@ export default function LoginPage() {
                     />
                   </div>
                 </div>
-
-                {error && (
-                  <div className="alert alert-danger py-2 px-3 rounded-3 small border-0 mb-4" style={{ backgroundColor: '#FFF2F4', color: '#D2143A' }}>
-                    Error: {error}
-                  </div>
-                )}
 
                 <button 
                   type="submit" 

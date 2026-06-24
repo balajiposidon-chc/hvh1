@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
 import Footer from '@/components/Footer';
@@ -8,6 +9,23 @@ import { useCart } from '@/context/CartContext';
 
 export default function CartPage() {
     const { cart, removeFromCart, updateQuantity } = useCart();
+    const [currency, setCurrency] = useState('INR');
+
+    useEffect(() => {
+        const updateCurrency = () => {
+            setCurrency(localStorage.getItem('hill-currency') || 'INR');
+        };
+        updateCurrency();
+        window.addEventListener('currencyChange', updateCurrency);
+        return () => window.removeEventListener('currencyChange', updateCurrency);
+    }, []);
+
+    const formatCurrency = (amount) => {
+        if (currency === 'USD') {
+            return `$${(amount / 83).toFixed(2)}`;
+        }
+        return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
 
     const subtotal = cart.reduce((sum, item) => {
         const itemPrice = item.discountPrice > 0 ? item.discountPrice : item.price;
@@ -60,7 +78,7 @@ export default function CartPage() {
                           <h5 className="fw-bold text-dark mb-1" style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem' }}>
                             {item.name}
                           </h5>
-                          <p className="text-cherry fw-semibold small mb-2">₹{itemPrice} / {item.unit || 'piece'}</p>
+                           <p className="text-cherry fw-semibold small mb-2">{formatCurrency(itemPrice)} / {item.unit || 'piece'}</p>
                           
                           {/* Quantity selector */}
                           <div className="d-inline-flex align-items-center border border-light rounded-pill p-1 bg-light">
@@ -84,7 +102,7 @@ export default function CartPage() {
 
                         {/* Actions */}
                         <div className="text-center text-sm-end d-flex flex-column justify-content-between h-100">
-                          <span className="fs-5 fw-bold text-dark mb-2 d-block">₹{itemPrice * item.quantity}</span>
+                          <span className="fs-5 fw-bold text-dark mb-2 d-block">{formatCurrency(itemPrice * item.quantity)}</span>
                           <button 
                             className="btn btn-link text-decoration-none text-danger p-0 d-flex align-items-center gap-1 small justify-content-center justify-content-sm-end"
                             onClick={() => removeFromCart(item.id)}
@@ -116,28 +134,28 @@ export default function CartPage() {
                     </div>
                     <div className="d-flex justify-content-between text-muted">
                       <span>Subtotal:</span>
-                      <span className="text-dark fw-semibold">₹{subtotal}</span>
+                      <span className="text-dark fw-semibold">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="d-flex justify-content-between text-muted">
                       <span>GST (5%):</span>
-                      <span className="text-dark fw-semibold">₹{tax.toFixed(2)}</span>
+                      <span className="text-dark fw-semibold">{formatCurrency(tax)}</span>
                     </div>
                     <div className="d-flex justify-content-between text-muted">
                       <span>Shipping Fee:</span>
                       <span className="text-dark fw-semibold">
-                        {shippingFee === 0 ? <span className="text-success fw-bold">FREE</span> : `₹${shippingFee}`}
+                        {shippingFee === 0 ? <span className="text-success fw-bold">FREE</span> : formatCurrency(shippingFee)}
                       </span>
                     </div>
                     {shippingFee > 0 && (
                       <p className="text-muted small mt-1 mb-0" style={{ fontSize: '0.75rem' }}>
-                        *Add ₹{1000 - subtotal} more to get FREE shipping!
+                        *Add {formatCurrency(1000 - subtotal)} more to get FREE shipping!
                       </p>
                     )}
                   </div>
 
                   <div className="d-flex justify-content-between align-items-center my-4">
                     <span className="fw-bold text-dark">Estimated Total:</span>
-                    <span className="fs-4 fw-bold text-cherry">₹{total.toFixed(2)}</span>
+                    <span className="fs-4 fw-bold text-cherry">{formatCurrency(total)}</span>
                   </div>
 
                   <Link href="/checkout" className="btn btn-cherry w-100 py-3 rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 text-white text-decoration-none">

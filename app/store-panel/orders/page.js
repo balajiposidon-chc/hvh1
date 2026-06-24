@@ -4,20 +4,32 @@ import { useEffect, useState, Suspense } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShoppingBag, Eye, Calendar, User, RefreshCw, X, Download, Printer } from 'lucide-react';
+import { ShoppingBag, Eye, Calendar, User, RefreshCw, X, Download, Printer, Search, Filter } from 'lucide-react';
 
 function StoreOrdersManagementContent() {
   const { user, permissions = [] } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const storeIdParam = searchParams.get('storeId');
+  const openIdParam = searchParams.get('openId');
   
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All Status');
   
   // Selected order details modal
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    if (openIdParam && orders.length > 0) {
+      const match = orders.find(o => o._id === openIdParam);
+      if (match) {
+        setSelectedOrder(match);
+      }
+    }
+  }, [openIdParam, orders]);
 
   useEffect(() => {
     if (user) {
@@ -80,6 +92,18 @@ function StoreOrdersManagementContent() {
   const isSuperAdmin = user?.role?.toLowerCase() === 'super admin' || user?.role?.toLowerCase() === 'superadmin';
   if (!user || (!permissions.includes('store-panel') && !isSuperAdmin)) return null;
 
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = (order._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (order.user?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesStatus = true;
+    if (statusFilter !== 'All Status') {
+      matchesStatus = (order.status || 'Pending').toLowerCase() === statusFilter.toLowerCase();
+    }
+    
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <AdminLayout>
       <div className="mb-8">
@@ -88,6 +112,36 @@ function StoreOrdersManagementContent() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden mb-12">
+        <div className="p-6 border-b border-neutral-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <input 
+              type="text" 
+              placeholder="Search by Order ID, Customer name..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-sm text-neutral-900"
+            />
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-auto">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700 text-sm"
+              >
+                <option value="All Status">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -105,12 +159,12 @@ function StoreOrdersManagementContent() {
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-neutral-500">Loading orders...</td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-neutral-500">No orders found.</td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-primary">
                       #ORD-{order._id.slice(-6).toUpperCase()}
@@ -122,7 +176,13 @@ function StoreOrdersManagementContent() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {(() => {
+                        const d = new Date(order.createdAt);
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}-${month}-${year}`;
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-neutral-900">
                       ₹{(order.totalPrice || order.total || 0).toLocaleString()}
@@ -134,10 +194,12 @@ function StoreOrdersManagementContent() {
                         onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
                         className={`text-xs font-bold rounded-full px-3 py-1.5 border outline-none bg-white cursor-pointer transition-all ${
                           order.status === 'Delivered' 
-                            ? 'text-emerald-600 border-emerald-200 bg-emerald-50/50' 
-                            : order.status === 'Pending'
-                              ? 'text-amber-600 border-amber-200 bg-amber-50/50'
-                              : 'text-blue-600 border-blue-200 bg-blue-50/50'
+                            ? 'text-green-600 border-green-200 bg-green-50/50' 
+                            : order.status === 'Cancelled'
+                              ? 'text-red-600 border-red-200 bg-red-50/50'
+                              : order.status === 'Pending'
+                                ? 'text-yellow-600 border-yellow-200 bg-yellow-50/50'
+                                : 'text-blue-600 border-blue-200 bg-blue-50/50'
                         }`}
                       >
                         <option value="Pending">Pending</option>
@@ -150,7 +212,7 @@ function StoreOrdersManagementContent() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => setSelectedOrder(order)}
-                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100"
+                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 cursor-pointer border-0 bg-transparent"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />

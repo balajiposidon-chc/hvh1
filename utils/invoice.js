@@ -388,13 +388,22 @@ export async function downloadInvoicePDF(order) {
     const city = order.shippingAddress?.city || 'N/A';
     const state = order.shippingAddress?.state || 'N/A';
     const zipCode = order.shippingAddress?.zipCode || 'N/A';
+    const fullBillingAddress = `${street}, ${city}, ${state} - ${zipCode}`;
+    const billingAddressLines = doc.splitTextToSize(fullBillingAddress, 50);
     
-    doc.text(name, 15, 47);
+    let billedToY = 47;
+    doc.text(name, 15, billedToY);
     doc.setTextColor(...textColorMuted);
-    doc.text(`Email: ${email}`, 15, 52);
-    doc.text(`Phone: ${phone}`, 15, 57);
-    doc.text(`Addr: ${street},`, 15, 62);
-    doc.text(`${city}, ${state} - ${zipCode}`, 15, 67);
+    billedToY += 5;
+    doc.text(`Email: ${email}`, 15, billedToY);
+    billedToY += 5;
+    doc.text(`Phone: ${phone}`, 15, billedToY);
+    billedToY += 5;
+    doc.text("Addr:", 15, billedToY);
+    billingAddressLines.forEach(line => {
+      doc.text(line, 24, billedToY);
+      billedToY += 4.5;
+    });
 
     // Column 2: Seller details (X: pageWidth / 3 + 5)
     const col2X = pageWidth / 3 + 5;
@@ -404,23 +413,18 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'normal');
     doc.text(sellerName, col2X, 47);
     doc.setTextColor(...textColorMuted);
-    doc.text(`Email: ${sellerEmail}`, col2X, 52);
-    doc.text(`Phone: ${sellerPhone}`, col2X, 57);
     
-    // Split and format address lines
-    let addrLine1 = sellerAddress;
-    let addrLine2 = '';
-    const commaIdx = sellerAddress.indexOf(',', 22);
-    if (commaIdx !== -1) {
-      addrLine1 = sellerAddress.substring(0, commaIdx + 1);
-      addrLine2 = sellerAddress.substring(commaIdx + 1).trim();
-    } else if (sellerAddress.length > 25) {
-      addrLine1 = sellerAddress.substring(0, 25) + '...';
-    }
-    doc.text(`Addr: ${addrLine1}`, col2X, 62);
-    if (addrLine2) {
-      doc.text(addrLine2, col2X + 9, 67);
-    }
+    let soldByY = 52;
+    doc.text(`Email: ${sellerEmail}`, col2X, soldByY);
+    soldByY += 5;
+    doc.text(`Phone: ${sellerPhone}`, col2X, soldByY);
+    soldByY += 5;
+    doc.text("Addr:", col2X, soldByY);
+    const sellerAddressLines = doc.splitTextToSize(sellerAddress, 50);
+    sellerAddressLines.forEach(line => {
+      doc.text(line, col2X + 9, soldByY);
+      soldByY += 4.5;
+    });
 
     // Column 3: Invoice Info (X: 2 * pageWidth / 3 + 5)
     const col3X = 2 * pageWidth / 3 + 5;
@@ -428,20 +432,29 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'bold');
     doc.text("Invoice Info:", col3X, 42);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Order: #ORD-${orderShortId}`, col3X, 47);
+    
+    let infoY = 47;
+    doc.text(`Order: #ORD-${orderShortId}`, col3X, infoY);
     doc.setTextColor(...textColorMuted);
-    doc.text(`ID: ${orderId.substring(0, 14)}`, col3X, 52);
-    doc.text(`Date: ${dateStr}`, col3X, 57);
-    doc.text(`Payment: ${order.paymentMethod || 'COD'}`, col3X, 62);
-    doc.text(`Status: ${order.status || 'Pending'}`, col3X, 67);
+    infoY += 5;
+    doc.text(`ID: ${orderId.substring(0, 14)}`, col3X, infoY);
+    infoY += 5;
+    doc.text(`Date: ${dateStr}`, col3X, infoY);
+    infoY += 5;
+    doc.text(`Payment: ${order.paymentMethod || 'COD'}`, col3X, infoY);
+    infoY += 5;
+    doc.text(`Status: ${order.status || 'Pending'}`, col3X, infoY);
+    infoY += 5; // offset bottom margin
+
+    const maxY = Math.max(billedToY, soldByY, infoY) + 2;
 
     // Horizontal Line Separator
     doc.setDrawColor(...borderGray);
     doc.setLineWidth(0.5);
-    doc.line(15, 73, pageWidth - 15, 73);
+    doc.line(15, maxY, pageWidth - 15, maxY);
 
     // 3. Table Header
-    let currentY = 82;
+    let currentY = maxY + 8;
     doc.setFillColor(...lightGray);
     doc.rect(15, currentY, pageWidth - 30, 8, 'F');
     doc.setFont('helvetica', 'bold');

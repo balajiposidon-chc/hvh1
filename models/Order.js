@@ -21,6 +21,7 @@ const OrderSchema = new mongoose.Schema({
     state: { type: String, required: true },
     zipCode: { type: String, required: true }
   },
+  phone: { type: String },
   paymentMethod: { type: String, required: true }, // 'Razorpay', 'COD'
   paymentResult: {
     id: { type: String },

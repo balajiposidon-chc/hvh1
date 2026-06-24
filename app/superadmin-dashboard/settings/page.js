@@ -100,10 +100,22 @@ export default function SuperAdminSettingsPage() {
     e.preventDefault();
     setError('');
     setMessage('');
-    setSaving(true);
+
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
     
-    // Auto calculate preset theme background and text colors if they are not overridden manually
-    // but here we let the pickers send whatever they chose.
+    if (!emailRegex.test(contactEmail)) {
+      setError('Invalid contact email format.');
+      return;
+    }
+    
+    if (!phoneRegex.test(phone)) {
+      setError('Invalid contact phone format. Must be between 10 and 15 digits.');
+      return;
+    }
+
+    setSaving(true);
     
     try {
       const res = await fetch('/api/admin/settings', {

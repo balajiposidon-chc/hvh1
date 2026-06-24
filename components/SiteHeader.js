@@ -12,6 +12,18 @@ export default function SiteHeader() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState('INR');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('hill-currency') || 'INR';
+    setSelectedCurrency(stored);
+  }, []);
+
+  const handleCurrencyChange = (cur) => {
+    setSelectedCurrency(cur);
+    localStorage.setItem('hill-currency', cur);
+    window.dispatchEvent(new Event('currencyChange'));
+  };
 
   const cartCount = cart ? cart.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
@@ -47,6 +59,21 @@ export default function SiteHeader() {
             <Link href="/products" className="text-dark fw-semibold text-decoration-none px-2 py-1" style={{ transition: 'color 0.2s', fontSize: '0.95rem' }}>
               Shop Products
             </Link>
+            
+            {/* Currency Switcher */}
+            <div className="d-flex align-items-center gap-1 border rounded-pill px-2.5 py-1 bg-light">
+              <span className="text-muted small fw-semibold" style={{ fontSize: '0.75rem' }}>Currency:</span>
+              <select 
+                value={selectedCurrency} 
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+                className="border-0 bg-transparent text-dark fw-bold outline-none cursor-pointer text-xs"
+                style={{ outline: 'none' }}
+              >
+                <option value="INR">₹ INR</option>
+                <option value="USD">$ USD</option>
+              </select>
+            </div>
+
             <Link href="/cart" className="position-relative text-dark fw-semibold text-decoration-none px-2 py-1 d-flex align-items-center gap-2" style={{ transition: 'color 0.2s', fontSize: '0.95rem' }}>
               <ShoppingCart size={18} className="text-muted" />
               {cartCount > 0 && (
@@ -120,6 +147,18 @@ export default function SiteHeader() {
             <Link href="/cart" className="text-dark text-decoration-none py-2 fw-medium border-bottom border-light d-flex align-items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
               <ShoppingCart size={18} /> Cart ({cartCount})
             </Link>
+            <div className="py-2 border-bottom border-light d-flex align-items-center justify-content-between">
+              <span className="text-dark fw-medium">Currency</span>
+              <select 
+                value={selectedCurrency} 
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+                className="form-select form-select-sm rounded-pill border-light bg-light text-dark fw-bold outline-none cursor-pointer"
+                style={{ width: '120px' }}
+              >
+                <option value="INR">₹ INR</option>
+                <option value="USD">$ USD</option>
+              </select>
+            </div>
             {user ? (
               <>
                 <Link href="/profile" className="text-dark text-decoration-none py-2 fw-medium border-bottom border-light d-flex align-items-center gap-2" onClick={() => setMobileMenuOpen(false)}>

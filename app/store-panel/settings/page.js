@@ -78,6 +78,18 @@ function StoreSettingsPageContent() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    
+    if (email.trim() && !emailRegex.test(email.trim())) {
+      setError('Invalid email format.');
+      return;
+    }
+    if (contactNumber.trim() && !phoneRegex.test(contactNumber.trim())) {
+      setError('Invalid phone number format. Must be between 10 and 15 digits.');
+      return;
+    }
+
     setError('');
     setMessage('');
     setSaving(true);
@@ -162,7 +174,8 @@ function StoreSettingsPageContent() {
                 value={location} 
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. T. Nagar, Chennai"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
+                style={{ paddingLeft: '2.5rem' }}
+                className="w-full pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
                 required
               />
             </div>
@@ -178,7 +191,8 @@ function StoreSettingsPageContent() {
                   value={contactNumber} 
                   onChange={(e) => setContactNumber(e.target.value)}
                   placeholder="e.g. +91 9876543210"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
+                  style={{ paddingLeft: '2.5rem' }}
+                  className="w-full pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
                 />
               </div>
             </div>
@@ -192,7 +206,8 @@ function StoreSettingsPageContent() {
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. chennai@hillandvalley.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
+                  style={{ paddingLeft: '2.5rem' }}
+                  className="w-full pr-4 py-3 rounded-xl border border-neutral-200 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-primary text-neutral-900"
                 />
               </div>
             </div>

@@ -138,7 +138,7 @@ export default async function ProductsPage({ searchParams }) {
                   </Link>
                 </div>
               ) : (
-                <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 animate__animated animate__fadeInUp">
+                <div className="row row-cols-1 row-cols-md-2 row-cols-xl-2 g-4 animate__animated animate__fadeInUp">
                   {products.map((product) => (
                     <div key={product._id} className="col">
                       <ProductCard product={product} />

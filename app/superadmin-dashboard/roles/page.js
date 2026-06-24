@@ -162,10 +162,10 @@ export default function RolePermissionManager() {
       {loading ? (
         <div className="bg-white rounded-3xl p-12 text-center text-neutral-500 border border-neutral-100 shadow-sm">Loading roles data...</div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="row g-4">
           
           {/* Roles List */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="col-12 col-lg-7 space-y-6">
             <div className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm">
               <h5 className="font-bold text-neutral-900 border-b border-neutral-100 pb-3 mb-4 d-flex align-items-center gap-2">
                 <Shield className="w-5 h-5 text-primary" />
@@ -219,21 +219,21 @@ export default function RolePermissionManager() {
           </div>
 
           {/* Create / Edit Form */}
-          <div className="space-y-6">
-            <form onSubmit={handleSaveRole} className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm space-y-4">
+          <div className="col-12 col-lg-5 space-y-6">
+            <form onSubmit={handleSaveRole} className="bg-white rounded-3xl p-6 border-2 border-cherry/30 shadow-md space-y-4">
               <h5 className="font-bold text-neutral-900 border-b border-neutral-100 pb-3 mb-4 d-flex align-items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" />
                 <span>{editMode ? 'Edit Role Details' : 'Create Custom Role'}</span>
               </h5>
 
               <div>
-                <label className="form-label text-neutral-700 small fw-semibold">Role Name</label>
+                <label className="form-label text-neutral-700 small fw-semibold">Role Name *</label>
                 <input 
                   type="text" 
                   value={roleName} 
                   onChange={(e) => setRoleName(e.target.value)} 
                   placeholder="e.g. Sales Representative"
-                  className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                  className="form-control rounded-xl p-3 bg-white border-2 border-cherry/40 text-sm focus:border-cherry focus:ring-2 focus:ring-cherry/20 font-semibold text-neutral-900 shadow-sm"
                   required
                 />
               </div>

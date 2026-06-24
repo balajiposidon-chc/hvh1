@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Phone, CreditCard, ShoppingBag } from 'lucide-react';
@@ -16,6 +16,23 @@ export default function CheckoutPage() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [currency, setCurrency] = useState('INR');
+
+    useEffect(() => {
+        const updateCurrency = () => {
+            setCurrency(localStorage.getItem('hill-currency') || 'INR');
+        };
+        updateCurrency();
+        window.addEventListener('currencyChange', updateCurrency);
+        return () => window.removeEventListener('currencyChange', updateCurrency);
+    }, []);
+
+    const formatCurrency = (amount) => {
+        if (currency === 'USD') {
+            return `$${(amount / 83).toFixed(2)}`;
+        }
+        return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
 
     const subtotal = cart.reduce((sum, item) => {
         const itemPrice = item.discountPrice > 0 ? item.discountPrice : item.price;
@@ -37,6 +54,11 @@ export default function CheckoutPage() {
         }
         if (!address || !phone) {
             setError('Shipping address and phone are required.');
+            return;
+        }
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(phone.trim())) {
+            setError('Contact phone number must be exactly 10 digits (numbers only).');
             return;
         }
         if (cart.length === 0) {
@@ -157,15 +179,15 @@ export default function CheckoutPage() {
 
                     {/* Phone Input */}
                     <div>
-                      <label className="form-label text-dark small fw-semibold">Contact Phone Number</label>
+                      <label className="form-label text-dark small fw-semibold">Contact Phone Number * (10 Digits)</label>
                       <div className="d-flex align-items-center border rounded-pill px-3 py-2 bg-light">
                         <Phone size={16} className="text-muted me-2" />
                         <input 
                           type="text"
                           value={phone} 
-                          onChange={(e) => setPhone(e.target.value)} 
+                          onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} 
                           required
-                          placeholder="Phone number"
+                          placeholder="e.g. 9876543210"
                           className="w-100 border-0 bg-transparent text-sm"
                           style={{ outline: 'none', border: 'none', fontSize: '0.9rem' }}
                         />
@@ -209,7 +231,7 @@ export default function CheckoutPage() {
                             <h6 className="fw-bold text-dark small mb-0 text-truncate">{item.name}</h6>
                             <small className="text-muted">Qty: {item.quantity} {item.unit || 'piece'}</small>
                           </div>
-                          <span className="fw-semibold small text-dark">₹{itemPrice * item.quantity}</span>
+                          <span className="fw-semibold small text-dark">{formatCurrency(itemPrice * item.quantity)}</span>
                         </div>
                       );
                     })}
@@ -218,23 +240,23 @@ export default function CheckoutPage() {
                   <div className="d-flex flex-column gap-2 text-sm border-top border-light pt-3">
                     <div className="d-flex justify-content-between text-muted">
                       <span>Subtotal:</span>
-                      <span className="text-dark fw-semibold">₹{subtotal}</span>
+                      <span className="text-dark fw-semibold">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="d-flex justify-content-between text-muted">
                       <span>GST (5%):</span>
-                      <span className="text-dark fw-semibold">₹{tax.toFixed(2)}</span>
+                      <span className="text-dark fw-semibold">{formatCurrency(tax)}</span>
                     </div>
                     <div className="d-flex justify-content-between text-muted">
                       <span>Shipping:</span>
                       <span className="text-dark fw-semibold">
-                        {shippingFee === 0 ? <span className="text-success fw-bold">FREE</span> : `₹${shippingFee}`}
+                        {shippingFee === 0 ? <span className="text-success fw-bold">FREE</span> : formatCurrency(shippingFee)}
                       </span>
                     </div>
                   </div>
 
                   <div className="d-flex justify-content-between align-items-center border-top border-light mt-3 pt-3">
                     <span className="fw-bold text-dark">Total:</span>
-                    <span className="fs-4 fw-bold text-cherry">₹{total.toFixed(2)}</span>
+                    <span className="fs-4 fw-bold text-cherry">{formatCurrency(total)}</span>
                   </div>
                 </div>
               </div>

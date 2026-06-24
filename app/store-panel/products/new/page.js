@@ -32,12 +32,12 @@ function StoreProductsNewPageContent() {
             <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Create Product</h2>
             <p className="text-neutral-500 font-medium">Add a new item to your outlet catalog.</p>
           </div>
-          <Link 
+          <a 
             href={storeIdParam ? `/store-panel/products?storeId=${storeIdParam}` : "/store-panel/products"} 
-            className="px-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold transition-all text-sm text-decoration-none"
+            className="bg-primary hover:bg-primary-dark text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md text-sm transition-all text-decoration-none flex items-center justify-center gap-2"
           >
             ← Back to Products
-          </Link>
+          </a>
         </div>
         <div className="bg-white rounded-3xl p-2 border border-neutral-100 shadow-sm">
           <AdminProductForm action="create" initialData={{ store: storeIdParam || '' }}/>

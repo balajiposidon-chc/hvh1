@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Bell, IndianRupee, ShoppingCart, Users, AlertTriangle, ArrowUp, Eye, Trash2 } from 'lucide-react';
+import { Download, Bell, IndianRupee, ShoppingCart, Users, AlertTriangle, ArrowUp, Eye, Trash2, Package } from 'lucide-react';
 
 export default function SuperAdminDashboard() {
   const { user, permissions = [] } = useAuth();
@@ -208,27 +208,27 @@ export default function SuperAdminDashboard() {
           {/* KPI Cards */}
           <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[
-              { title: 'Total Revenue', value: `₹${(stats?.summary?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: IndianRupee, color: 'text-primary', bg: 'bg-primary/10' },
-              { title: 'Active Orders', value: stats?.summary?.activeOrders || 0, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { title: 'Total Customers', value: stats?.summary?.totalCustomers || 0, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { title: 'Low Stock Items', value: stats?.summary?.lowStockItems || 0, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50' }
+              { title: 'Total Revenue', value: `₹${(stats?.summary?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: IndianRupee, bg: 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md text-white border-0' },
+              { title: 'Total Orders', value: stats?.summary?.totalOrders || 0, icon: ShoppingCart, bg: 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md text-white border-0' },
+              { title: 'Total Products', value: stats?.summary?.totalProducts || 0, icon: Package, bg: 'bg-gradient-to-br from-purple-500 to-indigo-700 shadow-md text-white border-0' },
+              { title: 'Total Users', value: stats?.summary?.totalCustomers || 0, icon: Users, bg: 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-md text-white border-0' }
             ].map((kpi, idx) => (
               <motion.div variants={fadeIn} key={idx}>
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 hover:shadow-md transition-shadow">
+                <div className={`rounded-2xl p-6 hover:shadow-lg transition-all duration-300 ${kpi.bg}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-neutral-500 font-medium mb-1">{kpi.title}</p>
-                      <h3 className="text-2xl font-bold text-neutral-900">{kpi.value}</h3>
+                      <p className="opacity-90 font-bold mb-1 text-sm uppercase tracking-wider">{kpi.title}</p>
+                      <h3 className="text-3xl font-extrabold text-white">{kpi.value}</h3>
                     </div>
-                    <div className={`p-3 rounded-xl ${kpi.bg}`}>
-                      <kpi.icon className={`w-6 h-6 ${kpi.color}`} />
+                    <div className="p-3 rounded-xl bg-white bg-opacity-20 backdrop-blur-sm">
+                      <kpi.icon className="w-6 h-6 text-white" />
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <span className="flex items-center text-xs font-extrabold bg-white bg-opacity-35 text-white px-2 py-0.5 rounded-md">
                       <ArrowUp className="w-3 h-3 mr-1" /> 100%
                     </span>
-                    <span className="text-sm text-neutral-500 font-medium">Real-time Data</span>
+                    <span className="text-xs text-white opacity-85 font-medium">Real-time Data</span>
                   </div>
                 </div>
               </motion.div>
@@ -315,10 +315,10 @@ export default function SuperAdminDashboard() {
                     ) : (
                       (stats?.recentOrders || []).map((order) => {
                         const statusColor = order.status?.toLowerCase() === 'delivered' 
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' 
+                          ? 'bg-green-50 text-green-600 border border-green-200' 
                           : order.status?.toLowerCase() === 'cancelled'
                             ? 'bg-red-50 text-red-600 border border-red-200'
-                            : 'bg-amber-50 text-amber-600 border border-amber-200';
+                            : 'bg-yellow-50 text-yellow-600 border border-yellow-200';
 
                         return (
                           <tr key={order._id} className="hover:bg-neutral-50/50 transition-colors">
@@ -341,11 +341,13 @@ export default function SuperAdminDashboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">
-                              {new Date(order.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                              {(() => {
+                                const d = new Date(order.createdAt);
+                                const day = String(d.getDate()).padStart(2, '0');
+                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                const year = d.getFullYear();
+                                return `${day}-${month}-${year}`;
+                              })()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${statusColor}`}>

@@ -50,6 +50,7 @@ export async function POST(request) {
         brand: body.brand,
         stock: body.stock,
         unit: body.unit || 'piece',
+        weight: body.weight || '',
         images: body.images || [],
         status: body.status || 'active',
         featured: body.featured || false,

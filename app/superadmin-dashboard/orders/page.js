@@ -11,6 +11,8 @@ export default function OrdersManagement() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All Status');
 
   useEffect(() => {
     if (user) {
@@ -63,7 +65,55 @@ export default function OrdersManagement() {
     }
   };
 
+  const handleExport = () => {
+    try {
+      if (orders.length === 0) {
+        alert('No orders to export');
+        return;
+      }
+      const headers = ["Order ID", "Customer Name", "Customer Email", "Date", "Status", "Amount"];
+      const rows = orders.map(order => [
+        `#ORD-${order._id.toString().toUpperCase()}`,
+        order.user?.name || "Guest",
+        order.user?.email || "N/A",
+        new Date(order.createdAt).toLocaleDateString(),
+        order.status || "Pending",
+        `₹${order.totalPrice || order.total || 0}`
+      ]);
+      
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      ].join("\n");
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `orders_export_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to export orders.');
+    }
+  };
+
   if (!user) return null;
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = (order._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (order.user?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesStatus = true;
+    if (statusFilter !== 'All Status') {
+      matchesStatus = (order.status || 'Pending').toLowerCase() === statusFilter.toLowerCase();
+    }
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <AdminLayout>
@@ -72,7 +122,10 @@ export default function OrdersManagement() {
           <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Orders Management</h2>
           <p className="text-neutral-500 font-medium">Track, process, and manage customer orders</p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border-2 border-neutral-200 text-neutral-700 font-bold hover:bg-neutral-50 transition-colors w-full md:w-auto">
+        <button 
+          onClick={handleExport}
+          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border-2 border-neutral-200 text-neutral-700 font-bold hover:bg-neutral-50 transition-colors w-full md:w-auto cursor-pointer"
+        >
           <Download className="w-4 h-4" /> Export Orders
         </button>
       </div>
@@ -84,18 +137,25 @@ export default function OrdersManagement() {
             <input 
               type="text" 
               placeholder="Search by Order ID, Customer name..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-auto">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-              <select className="w-full pl-9 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700">
-                <option>All Status</option>
-                <option>Processing</option>
-                <option>Shipped</option>
-                <option>Delivered</option>
-                <option>Cancelled</option>
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-medium text-neutral-700"
+              >
+                <option value="All Status">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
               </select>
             </div>
           </div>
@@ -105,12 +165,12 @@ export default function OrdersManagement() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-neutral-50/50">
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-800 uppercase tracking-wider">Order ID</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-xs font-bold text-neutral-808 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
@@ -118,12 +178,12 @@ export default function OrdersManagement() {
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-neutral-500">Loading orders...</td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-neutral-500">No orders found.</td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <tr key={order._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-primary">
                       #{order._id.substring(0, 8).toUpperCase()}
@@ -135,16 +195,22 @@ export default function OrdersManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-medium">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {(() => {
+                        const d = new Date(order.createdAt);
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const year = d.getFullYear();
+                        return `${day}-${month}-${year}`;
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                        order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 
+                        order.status === 'Delivered' ? 'bg-green-50 text-green-600 border border-green-200' : 
                         order.status === 'Shipped' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
                         order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border border-red-200' :
-                        'bg-amber-50 text-amber-600 border border-amber-200'
+                        'bg-yellow-50 text-yellow-600 border border-yellow-200'
                       }`}>
-                        {order.status || 'Processing'}
+                        {order.status || 'Pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-neutral-900">
@@ -153,28 +219,28 @@ export default function OrdersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => router.push(`/superadmin-dashboard/orders/${order._id}/edit`)}
-                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1" 
+                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 mr-1 cursor-pointer border-0 bg-transparent" 
                         title="Edit Order"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDownloadInvoice(order)}
-                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
+                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 mr-1 cursor-pointer border-0 bg-transparent" 
                         title="Download PDF Invoice"
                       >
                         <Download className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handlePrintInvoice(order)}
-                        className="p-2 text-neutral-400 hover:text-emerald-600 transition-colors rounded-lg hover:bg-neutral-100 mr-1" 
+                        className="p-2 text-neutral-400 hover:text-emerald-600 transition-colors rounded-lg hover:bg-neutral-100 mr-1 cursor-pointer border-0 bg-transparent" 
                         title="Print Invoice"
                       >
                         <Printer className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteOrder(order._id)}
-                        className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" 
+                        className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 cursor-pointer border-0 bg-transparent" 
                         title="Delete Order"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -187,7 +253,7 @@ export default function OrdersManagement() {
           </table>
         </div>
         <div className="p-4 border-t border-neutral-100 flex justify-between items-center text-sm text-neutral-500 bg-neutral-50/30">
-          <span>Showing {orders.length} orders</span>
+          <span>Showing {filteredOrders.length} orders</span>
         </div>
       </div>
     </AdminLayout>

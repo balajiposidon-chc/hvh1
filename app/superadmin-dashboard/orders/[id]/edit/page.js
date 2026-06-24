@@ -69,6 +69,14 @@ export default function SuperAdminOrderEditPage({ params }) {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    // Telephone format validation: /^\+?[0-9]{10,15}$/
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (!phoneRegex.test(phone)) {
+      setError('Invalid contact phone number format. Must be between 10 and 15 digits.');
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/orders/${params.id}`, {
@@ -181,7 +189,7 @@ export default function SuperAdminOrderEditPage({ params }) {
             <div className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm">
               <h5 className="font-bold text-neutral-900 border-b border-neutral-100 pb-3 mb-4">Order Items</h5>
               <div className="divide-y divide-neutral-100">
-                {order.items?.map((item, idx) => (
+                {(order.orderItems || order.items || []).map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center py-3">
                     <div className="flex items-center gap-3">
                       <img src={item.image || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} alt="" className="rounded border border-neutral-200" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
@@ -226,6 +234,7 @@ export default function SuperAdminOrderEditPage({ params }) {
                   onChange={(e) => setIsPaid(e.target.checked)} 
                   className="h-4 w-4"
                   id="chkPaid"
+                  disabled={user?.role !== 'Super Admin'}
                 />
                 <label htmlFor="chkPaid" className="text-sm font-semibold text-neutral-700 select-none">Order is Paid</label>
               </div>
@@ -237,16 +246,17 @@ export default function SuperAdminOrderEditPage({ params }) {
                   onChange={(e) => setIsDelivered(e.target.checked)} 
                   className="h-4 w-4"
                   id="chkDelivered"
+                  disabled={user?.role !== 'Super Admin'}
                 />
                 <label htmlFor="chkDelivered" className="text-sm font-semibold text-neutral-700 select-none">Order is Delivered</label>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl p-6 border border-neutral-100 shadow-sm space-y-4">
-              <h5 className="font-bold text-neutral-900 border-b border-neutral-100 pb-3 mb-3">Order Financials</h5>
+              <h5 className="font-bold text-neutral-900 border-b border-neutral-100 pb-3 mb-3">Order Details</h5>
               <div className="space-y-2 text-sm text-neutral-600">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span>
+                  <span>Product Price:</span>
                   <span className="font-semibold text-neutral-900">₹{order.itemsPrice || order.subtotal || 0}</span>
                 </div>
                 <div className="flex justify-between">
