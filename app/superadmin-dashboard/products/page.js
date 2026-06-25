@@ -266,19 +266,31 @@ export default function ProductsManagement() {
           <span>
             Showing {filteredProducts.length === 0 ? 0 : indexOfFirstProduct + 1} - {Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <button 
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50"
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50 text-sm font-medium"
             >
               Prev
             </button>
-            <button className="px-3 py-1 rounded-md bg-primary text-white font-medium">{currentPage}</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                  currentPage === page 
+                    ? 'bg-primary text-white' 
+                    : 'border border-neutral-200 hover:bg-neutral-100 text-neutral-600'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
             <button 
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50"
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50 text-sm font-medium"
             >
               Next
             </button>

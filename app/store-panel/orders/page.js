@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShoppingBag, Eye, Calendar, User, RefreshCw, X, Download, Printer, Search, Filter } from 'lucide-react';
+import { ShoppingBag, Eye, Calendar, User, RefreshCw, X, Download, Printer, Search, Filter, Edit, Trash2, AlertTriangle } from 'lucide-react';
 
 function StoreOrdersManagementContent() {
   const { user, permissions = [] } = useAuth();
@@ -18,6 +18,8 @@ function StoreOrdersManagementContent() {
   const [updatingId, setUpdatingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  const [error, setError] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(null);
   
   // Selected order details modal
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -45,14 +47,18 @@ function StoreOrdersManagementContent() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      setError(null);
       const url = storeIdParam ? `/api/store-panel/orders?storeId=${storeIdParam}` : '/api/store-panel/orders';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders || []);
+      } else {
+        setError(data.message || 'Failed to fetch orders');
       }
     } catch (error) {
       console.error(error);
+      setError('An unexpected error occurred while fetching orders.');
     } finally {
       setLoading(false);
     }
@@ -89,6 +95,107 @@ function StoreOrdersManagementContent() {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!confirm('Are you sure you want to delete this order?')) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(prev => prev.filter(o => o._id !== orderId));
+      } else {
+        alert(data.message || 'Failed to delete order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server');
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (orders.length === 0) {
+      alert('No orders to export');
+      return;
+    }
+    const headers = ['Order ID', 'Customer Name', 'Customer Email', 'Phone', 'Street', 'City', 'State', 'Zip Code', 'Status', 'Total Price', 'Is Paid', 'Is Delivered', 'Created At'];
+    const rows = orders.map(order => [
+      `ORD-${order._id.slice(-6).toUpperCase()}`,
+      order.user?.name || 'Guest',
+      order.user?.email || 'N/A',
+      order.phone || 'N/A',
+      order.shippingAddress?.street || '',
+      order.shippingAddress?.city || '',
+      order.shippingAddress?.state || '',
+      order.shippingAddress?.zipCode || '',
+      order.status || 'Pending',
+      order.totalPrice || order.total || 0,
+      order.isPaid ? 'Yes' : 'No',
+      order.isDelivered ? 'Yes' : 'No',
+      new Date(order.createdAt).toLocaleDateString()
+    ]);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => {
+        const strVal = String(val).replace(/"/g, '""');
+        return `"${strVal}"`;
+      }).join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSaveEditOrder = async (updatedOrderData) => {
+    if (!/^[0-9]{10}$/.test(updatedOrderData.phone)) {
+      alert('Phone number must be exactly 10 digits.');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/orders/${updatedOrderData._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: updatedOrderData.status,
+          street: updatedOrderData.shippingAddress.street,
+          city: updatedOrderData.shippingAddress.city,
+          state: updatedOrderData.shippingAddress.state,
+          zipCode: updatedOrderData.shippingAddress.zipCode,
+          phone: updatedOrderData.phone
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(prev => prev.map(o => o._id === updatedOrderData._id ? {
+          ...o,
+          status: updatedOrderData.status,
+          phone: updatedOrderData.phone,
+          shippingAddress: updatedOrderData.shippingAddress
+        } : o));
+        if (selectedOrder && selectedOrder._id === updatedOrderData._id) {
+          setSelectedOrder(prev => ({
+            ...prev,
+            status: updatedOrderData.status,
+            phone: updatedOrderData.phone,
+            shippingAddress: updatedOrderData.shippingAddress
+          }));
+        }
+        setEditingOrder(null);
+      } else {
+        alert(data.message || 'Failed to update order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server');
+    }
+  };
+
   const isSuperAdmin = user?.role?.toLowerCase() === 'super admin' || user?.role?.toLowerCase() === 'superadmin';
   if (!user || (!permissions.includes('store-panel') && !isSuperAdmin)) return null;
 
@@ -106,9 +213,17 @@ function StoreOrdersManagementContent() {
 
   return (
     <AdminLayout>
-      <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Order Fulfillment</h2>
-        <p className="text-neutral-500 font-medium">Track shipping requests, update dispatch statuses, and process deliveries</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold text-neutral-900 mb-1">Order Fulfillment</h2>
+          <p className="text-neutral-500 font-medium">Track shipping requests, update dispatch statuses, and process deliveries</p>
+        </div>
+        <button 
+          onClick={handleExportCSV}
+          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold transition-all w-full md:w-auto border border-neutral-700 shadow-sm text-sm"
+        >
+          <Download className="w-4 h-4" /> Export Orders (CSV)
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden mb-12">
@@ -158,6 +273,16 @@ function StoreOrdersManagementContent() {
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-neutral-500">Loading orders...</td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center">
+                    <div className="mx-auto max-w-md bg-red-50 border border-red-200 rounded-2xl p-6 my-4 text-red-700 flex flex-col items-center justify-center gap-2">
+                      <AlertTriangle className="w-8 h-8 text-red-500" />
+                      <p className="font-extrabold text-base mb-0">Store Restrained</p>
+                      <p className="text-sm font-medium mb-0">{error}</p>
+                    </div>
+                  </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
@@ -212,10 +337,24 @@ function StoreOrdersManagementContent() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
                         onClick={() => setSelectedOrder(order)}
-                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 cursor-pointer border-0 bg-transparent"
+                        className="p-2 text-neutral-400 hover:text-primary transition-colors rounded-lg hover:bg-neutral-100 cursor-pointer border-0 bg-transparent mr-1"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setEditingOrder(JSON.parse(JSON.stringify(order)))}
+                        className="p-2 text-neutral-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 cursor-pointer border-0 bg-transparent mr-1"
+                        title="Edit Order"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteOrder(order._id)}
+                        className="p-2 text-neutral-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 cursor-pointer border-0 bg-transparent"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -306,6 +445,138 @@ function StoreOrdersManagementContent() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Order Modal */}
+      {editingOrder && (
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-neutral-100 relative max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setEditingOrder(null)}
+              className="absolute top-6 right-6 text-neutral-400 hover:text-neutral-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-2xl font-extrabold text-neutral-900 mb-6 flex items-center gap-2">
+              <Edit className="w-6 h-6 text-primary" /> Edit Order #{editingOrder._id.slice(-6).toUpperCase()}
+            </h3>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveEditOrder(editingOrder);
+            }} className="space-y-5">
+              
+              <div>
+                <label className="block text-xs font-extrabold text-neutral-500 uppercase tracking-wider mb-2">Order Status</label>
+                <select
+                  value={editingOrder.status || 'Pending'}
+                  onChange={(e) => setEditingOrder(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white font-semibold text-neutral-700 text-sm"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-neutral-500 uppercase tracking-wider mb-2">Phone Number</label>
+                <input
+                  type="text"
+                  maxLength={10}
+                  value={editingOrder.phone || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setEditingOrder(prev => ({ ...prev, phone: val }));
+                  }}
+                  placeholder="10-digit phone number"
+                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none font-semibold text-neutral-800 text-sm"
+                  required
+                />
+              </div>
+
+              <div className="border-t border-neutral-100 pt-4 space-y-4">
+                <h5 className="font-bold text-neutral-900 text-sm">Shipping Address</h5>
+                
+                <div>
+                  <label className="block text-xs font-bold text-neutral-400 mb-1">Street Address</label>
+                  <input
+                    type="text"
+                    value={editingOrder.shippingAddress?.street || ''}
+                    onChange={(e) => setEditingOrder(prev => ({
+                      ...prev,
+                      shippingAddress: { ...prev.shippingAddress, street: e.target.value }
+                    }))}
+                    className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium text-neutral-800"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-1">City</label>
+                    <input
+                      type="text"
+                      value={editingOrder.shippingAddress?.city || ''}
+                      onChange={(e) => setEditingOrder(prev => ({
+                        ...prev,
+                        shippingAddress: { ...prev.shippingAddress, city: e.target.value }
+                      }))}
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium text-neutral-800"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-400 mb-1">State</label>
+                    <input
+                      type="text"
+                      value={editingOrder.shippingAddress?.state || ''}
+                      onChange={(e) => setEditingOrder(prev => ({
+                        ...prev,
+                        shippingAddress: { ...prev.shippingAddress, state: e.target.value }
+                      }))}
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium text-neutral-800"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-neutral-400 mb-1">Zip Code</label>
+                  <input
+                    type="text"
+                    value={editingOrder.shippingAddress?.zipCode || ''}
+                    onChange={(e) => setEditingOrder(prev => ({
+                      ...prev,
+                      shippingAddress: { ...prev.shippingAddress, zipCode: e.target.value }
+                    }))}
+                    className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium text-neutral-800"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-100 pt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingOrder(null)}
+                  className="flex-1 py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-xl transition-all text-sm border border-neutral-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 px-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all text-sm shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -157,10 +157,7 @@ export default function AdminProductForm({ initialData, action }) {
         }
     };
 
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
-        if (!files.length) return;
-
+    const uploadFiles = async (files) => {
         setUploading(true);
         setError('');
         setMessage('');
@@ -200,8 +197,21 @@ export default function AdminProductForm({ initialData, action }) {
             setError(err.message || 'Failed to upload images.');
         } finally {
             setUploading(false);
-            e.target.value = '';
         }
+    };
+
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+        await uploadFiles(files);
+        e.target.value = '';
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        if (!files.length) return;
+        await uploadFiles(files);
     };
 
     const handleRemoveImage = (urlToRemove) => {
@@ -283,34 +293,34 @@ export default function AdminProductForm({ initialData, action }) {
         <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Name <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Name <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.name} onChange={(e) => handleChange('name', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Slug <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Slug <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.slug} onChange={(e) => handleChange('slug', e.target.value)} required />
                 </label>
             </div>
             
             <label className="block">
-                <span className="text-sm text-slate-700 font-semibold">Description <span className="text-red-500 font-bold">*</span></span>
+                <span className="text-sm text-slate-700 font-bold">Description <span className="text-red-500 font-bold">*</span></span>
                 <textarea value={form.description} onChange={(e) => handleChange('description', e.target.value)} rows={5} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none mt-2" required />
             </label>
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Price <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Price <span className="text-red-500 font-bold">*</span></span>
                     <Input type="text" value={form.price} onChange={(e) => handleChange('price', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Discount price</span>
+                    <span className="text-sm text-slate-700 font-bold">Discount price</span>
                     <Input type="text" value={form.discountPrice} onChange={(e) => handleChange('discountPrice', e.target.value)} />
                 </label>
             </div>
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Category <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Category <span className="text-red-500 font-bold">*</span></span>
                     <div className="mt-2 relative">
                         <Input 
                             list="category-list"
@@ -328,18 +338,18 @@ export default function AdminProductForm({ initialData, action }) {
                     </datalist>
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Brand <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Brand <span className="text-red-500 font-bold">*</span></span>
                     <Input value={form.brand} onChange={(e) => handleChange('brand', e.target.value)} required />
                 </label>
             </div>
             
             <div className="grid gap-4 sm:grid-cols-3">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Stock <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Stock <span className="text-red-500 font-bold">*</span></span>
                     <Input type="text" value={form.stock} onChange={(e) => handleChange('stock', e.target.value)} required />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Quantity Unit <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Quantity Unit <span className="text-red-500 font-bold">*</span></span>
                     <select
                         value={form.unit}
                         onChange={(e) => handleChange('unit', e.target.value)}
@@ -356,18 +366,18 @@ export default function AdminProductForm({ initialData, action }) {
                     </select>
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Package Capacity / Weight</span>
+                    <span className="text-sm text-slate-700 font-bold">Package Capacity / Weight</span>
                     <Input type="text" value={form.weight} onChange={(e) => handleChange('weight', e.target.value)} placeholder="e.g. 200g, 250g, 1L" />
                 </label>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">HSN Code</span>
+                    <span className="text-sm text-slate-700 font-bold">HSN Code</span>
                     <Input value={form.hsnCode} onChange={(e) => handleChange('hsnCode', e.target.value)} placeholder="e.g. 0908" />
                 </label>
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">GST Rate (%) <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">GST Rate (%) <span className="text-red-500 font-bold">*</span></span>
                     <select
                         value={form.gstRate}
                         onChange={(e) => handleChange('gstRate', e.target.value)}
@@ -384,9 +394,13 @@ export default function AdminProductForm({ initialData, action }) {
             </div>
             
             <div className="space-y-1">
-                <span className="text-sm text-slate-700 block font-semibold">Product Images</span>
-                <label className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50 mt-2">
-                    <span className="text-sm font-semibold text-slate-600 flex items-center gap-2 select-none">
+                <span className="text-sm text-slate-700 block font-bold">Product Images</span>
+                <label 
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                    className="flex items-center justify-center border border-dashed border-slate-300 rounded-xl p-3 hover:border-primary cursor-pointer transition bg-slate-50 hover:bg-slate-100/50 mt-2"
+                >
+                    <span className="text-sm font-bold text-slate-600 flex items-center gap-2 select-none">
                         {uploading ? (
                             <>
                                 <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
@@ -395,7 +409,7 @@ export default function AdminProductForm({ initialData, action }) {
                         ) : (
                             <>
                                 <Upload size={16} className="text-slate-500" />
-                                <span>Upload Local Image files</span>
+                                <span>Drag & Drop files or Click to Upload</span>
                             </>
                         )}
                     </span>
@@ -404,10 +418,6 @@ export default function AdminProductForm({ initialData, action }) {
             </div>
 
             <div className="space-y-2">
-                <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Image URLs</span>
-                    <Input value={form.images} onChange={(e) => handleChange('images', e.target.value)} placeholder="e.g. /uploads/image.png, https://..." />
-                </label>
                 
                 {form.images && (
                     <div className="flex flex-wrap gap-3 mt-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
@@ -435,7 +445,7 @@ export default function AdminProductForm({ initialData, action }) {
                 <span className="text-xl font-bold text-neutral-900 border-b border-neutral-100 pb-2 mb-4 block">Cooking Tips & Recommendations</span>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                        <span className="text-sm text-slate-700 font-semibold">Suggested Culinary Uses</span>
+                        <span className="text-sm text-slate-700 font-bold">Suggested Culinary Uses</span>
                         <textarea
                             value={form.culinaryUses}
                             onChange={(e) => handleChange('culinaryUses', e.target.value)}
@@ -445,7 +455,7 @@ export default function AdminProductForm({ initialData, action }) {
                         />
                     </label>
                     <label className="block">
-                        <span className="text-sm text-slate-700 font-semibold">Storage & Care</span>
+                        <span className="text-sm text-slate-700 font-bold">Storage & Care</span>
                         <textarea
                             value={form.storageCare}
                             onChange={(e) => handleChange('storageCare', e.target.value)}
@@ -457,7 +467,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
-                        <span className="text-sm text-slate-700 font-semibold">Authentic Sourcing Guarantee</span>
+                        <span className="text-sm text-slate-700 font-bold">Authentic Sourcing Guarantee</span>
                         <textarea
                             value={form.sourcingGuarantee}
                             onChange={(e) => handleChange('sourcingGuarantee', e.target.value)}
@@ -467,7 +477,7 @@ export default function AdminProductForm({ initialData, action }) {
                         />
                     </label>
                     <label className="block">
-                        <span className="text-sm text-slate-700 font-semibold">Allergen Safety</span>
+                        <span className="text-sm text-slate-700 font-bold">Allergen Safety</span>
                         <textarea
                             value={form.allergenSafety}
                             onChange={(e) => handleChange('allergenSafety', e.target.value)}
@@ -481,7 +491,7 @@ export default function AdminProductForm({ initialData, action }) {
             
             <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                    <span className="text-sm text-slate-700 font-semibold">Status <span className="text-red-500 font-bold">*</span></span>
+                    <span className="text-sm text-slate-700 font-bold">Status <span className="text-red-500 font-bold">*</span></span>
                     <select value={form.status} onChange={(e) => handleChange('status', e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none">
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -489,7 +499,7 @@ export default function AdminProductForm({ initialData, action }) {
                 </label>
                 <label className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 mt-2 sm:mt-0 cursor-pointer select-none">
                     <input type="checkbox" checked={form.featured} onChange={(e) => handleChange('featured', e.target.checked)} className="h-4 w-4" />
-                    <span className="text-sm text-slate-700 font-semibold">Featured product</span>
+                    <span className="text-sm text-slate-700 font-bold">Featured product</span>
                 </label>
             </div>
             
@@ -507,7 +517,7 @@ export default function AdminProductForm({ initialData, action }) {
                         <div>
                             <h4 className="text-2xl font-extrabold text-neutral-950">Success!</h4>
                             <p className="text-neutral-500 text-sm mt-2">
-                                {action === 'create' ? 'Product created successfully' : 'Product updated successfully'}
+                                {action === 'create' ? 'Product Created Successfully' : 'Product updated successfully'}
                             </p>
                             {changedFieldsList.length > 0 ? (
                                 <div className="text-left bg-neutral-50 p-4 rounded-2xl border border-neutral-100 max-h-40 overflow-y-auto text-xs mt-3">

@@ -41,6 +41,7 @@ export default function AdminUserTable({ users: initialUsers, mainAdminEmail }) 
             <tr>
               <th className="px-6 py-4 font-medium text-slate-600">Name</th>
               <th className="px-6 py-4 font-medium text-slate-600">Email</th>
+              <th className="px-6 py-4 font-medium text-slate-600">Phone</th>
               <th className="px-6 py-4 font-medium text-slate-600">Role</th>
               <th className="px-6 py-4 font-medium text-slate-600">Status</th>
               <th className="px-6 py-4 font-medium text-slate-600">Actions</th>
@@ -50,6 +51,7 @@ export default function AdminUserTable({ users: initialUsers, mainAdminEmail }) 
             {users.map((user) => (<tr key={user.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 text-slate-900">{user.name}</td>
                 <td className="px-6 py-4 text-slate-900">{user.email}</td>
+                <td className="px-6 py-4 text-slate-900">{user.phone}</td>
                 <td className="px-6 py-4 text-slate-900">{user.role}</td>
                 <td className="px-6 py-4 text-slate-900">{user.status}</td>
                 <td className="px-6 py-4 space-x-2">

@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Search, Edit, Trash2, Tag, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Tag, Eye, AlertTriangle } from 'lucide-react';
 
 function StoreProductsManagementContent() {
   const { user, permissions = [] } = useAuth();
@@ -18,6 +18,8 @@ function StoreProductsManagementContent() {
   const [sortBy, setSortBy] = useState('category-asc');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -46,18 +48,26 @@ function StoreProductsManagementContent() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const url = storeIdParam ? `/api/store-panel/products?storeId=${storeIdParam}` : '/api/store-panel/products';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setProducts(data.products || []);
+      } else {
+        setError(data.message || 'Failed to fetch products');
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      setError('An unexpected error occurred while fetching products.');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, sortBy]);
 
   const handleDeleteProduct = async (id) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
@@ -108,6 +118,12 @@ function StoreProductsManagementContent() {
     }
     return 0;
   });
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   const isSuperAdmin = user?.role?.toLowerCase() === 'super admin' || user?.role?.toLowerCase() === 'superadmin';
   if (!user || (!permissions.includes('store-panel') && !isSuperAdmin)) return null;
@@ -181,12 +197,22 @@ function StoreProductsManagementContent() {
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">Loading products...</td>
                 </tr>
-              ) : sortedProducts.length === 0 ? (
+              ) : error ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center">
+                    <div className="mx-auto max-w-md bg-red-50 border border-red-200 rounded-2xl p-6 my-4 text-red-700 flex flex-col items-center justify-center gap-2">
+                      <AlertTriangle className="w-8 h-8 text-red-500" />
+                      <p className="font-extrabold text-base mb-0">Store Restrained</p>
+                      <p className="text-sm font-medium mb-0">{error}</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentProducts.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-neutral-500">No products found.</td>
                 </tr>
               ) : (
-                sortedProducts.map((product) => (
+                currentProducts.map((product) => (
                   <tr key={product._id} className="hover:bg-neutral-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
@@ -253,6 +279,41 @@ function StoreProductsManagementContent() {
               )}
             </tbody>
           </table>
+        </div>
+        
+        <div className="p-4 border-t border-neutral-100 flex justify-between items-center text-sm text-neutral-500 bg-neutral-50/30">
+          <span>
+            Showing {filteredProducts.length === 0 ? 0 : indexOfFirstProduct + 1} - {Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+          </span>
+          <div className="flex gap-1 flex-wrap">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50 text-sm font-medium"
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                  currentPage === page 
+                    ? 'bg-primary text-white' 
+                    : 'border border-neutral-200 hover:bg-neutral-100 text-neutral-600'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-3 py-1 rounded-md border border-neutral-200 hover:bg-neutral-100 disabled:opacity-50 text-sm font-medium"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </AdminLayout>

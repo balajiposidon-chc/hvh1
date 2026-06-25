@@ -34,7 +34,7 @@ function StoreProductsNewPageContent() {
           </div>
           <a 
             href={storeIdParam ? `/store-panel/products?storeId=${storeIdParam}` : "/store-panel/products"} 
-            className="bg-primary hover:bg-primary-dark text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md text-sm transition-all text-decoration-none flex items-center justify-center gap-2"
+            className="bg-neutral-900 text-white font-extrabold px-8 py-3 text-base rounded-2xl transition-all border border-neutral-700 hover:bg-neutral-800 text-decoration-none flex items-center justify-center gap-2"
           >
             ← Back to Products
           </a>

@@ -350,7 +350,7 @@ footer a:hover {
 }
 
 /* Card Hover Overlay */
-.card:hover #overlay {
+.card:hover .card-hover-overlay {
   opacity: 1 !important;
 }
 

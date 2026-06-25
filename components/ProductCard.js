@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 export default function ProductCard({ product }) {
     const { addToCart } = useCart();
     const [added, setAdded] = useState(false);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const router = useRouter();
     const [currency, setCurrency] = useState('INR');
 
@@ -33,7 +34,9 @@ export default function ProductCard({ product }) {
     const savings = originalPrice ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
     
     // Fallback category display
-    const categoryDisplay = product.categoryName || product.category || 'Spice';
+    const categoryDisplay = product.categoryName || 
+                            (product.category && typeof product.category === 'object' ? product.category.name : product.category) || 
+                            'Spices';
 
     // Stars rating calculation
     const ratingValue = product.rating || 4.5;
@@ -65,16 +68,50 @@ export default function ProductCard({ product }) {
           style={{ height: '280px' }}
         >
           <img 
-            src={product.images?.[0] ?? '/placeholder.png'} 
+            src={product.images?.[activeImageIndex] ?? '/placeholder.png'} 
             alt={product.name} 
             className="hover-zoom"
             style={{ width: '100%', height: '280px', objectFit: 'cover', transition: 'transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' }}
           />
+          
+          {/* Multi-angle image dot navigation carousel */}
+          {product.images && product.images.length > 1 && (
+            <div 
+              className="position-absolute bottom-3 start-50 translate-middle-x d-flex gap-1.5 px-2 py-1 rounded-pill bg-dark bg-opacity-40 backdrop-blur-sm" 
+              style={{ zIndex: 10, bottom: '15px' }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              {product.images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveImageIndex(idx);
+                  }}
+                  onMouseEnter={() => setActiveImageIndex(idx)}
+                  className="rounded-circle border-0 p-0"
+                  style={{
+                    width: '7px',
+                    height: '7px',
+                    backgroundColor: activeImageIndex === idx ? 'var(--cherry-red)' : 'rgba(255, 255, 255, 0.5)',
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                  title={`View image ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Subtle Hover Overlay */}
           <div 
-            className="position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center opacity-0 bg-dark bg-opacity-25" 
+            className="card-hover-overlay position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center opacity-0 bg-dark bg-opacity-25" 
             style={{ transition: 'opacity 0.3s ease', cursor: 'pointer' }} 
-            id="overlay"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

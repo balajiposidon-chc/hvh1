@@ -34,16 +34,16 @@ export default function ProfileClient({ initialUser, initialOrders }) {
     setEditSuccess('');
     setSaving(true);
 
-    const nameRegex = /^[a-zA-Z\s]+$/;
+    const nameRegex = /^[a-zA-Z\s\-]+$/;
     if (!nameRegex.test(editName.trim())) {
-      setEditError('Full Name can only contain letters and spaces.');
+      setEditError('Full Name can only contain letters, spaces, and hyphens.');
       setSaving(false);
       return;
     }
 
-    const phoneRegex = /^\+?[0-9\s\-()]{10,15}$/;
+    const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(editPhone.trim())) {
-      setEditError('Invalid phone number format. Must be 10-15 digits.');
+      setEditError('Phone number must be exactly 10 numeric digits.');
       setSaving(false);
       return;
     }
@@ -388,7 +388,7 @@ export default function ProfileClient({ initialUser, initialOrders }) {
                   <input 
                     type="text" 
                     value={editName} 
-                    onChange={(e) => setEditName(e.target.value.replace(/[^a-zA-Z\s]/g, ''))} 
+                    onChange={(e) => setEditName(e.target.value.replace(/[^a-zA-Z\s\-]/g, ''))} 
                     required
                     placeholder="Enter full name"
                     className="w-100 border-0 bg-transparent text-sm"
@@ -404,7 +404,7 @@ export default function ProfileClient({ initialUser, initialOrders }) {
                   <input 
                     type="text" 
                     value={editPhone} 
-                    onChange={(e) => setEditPhone(e.target.value.replace(/[^0-9+\-()\s]/g, ''))} 
+                    onChange={(e) => setEditPhone(e.target.value.replace(/[^0-9]/g, ''))} 
                     required
                     placeholder="Enter phone number"
                     className="w-100 border-0 bg-transparent text-sm"

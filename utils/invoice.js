@@ -32,7 +32,7 @@ export async function printInvoiceHTML(order) {
   const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
   const userName = order.user?.name || 'Customer';
   const userEmail = order.user?.email || 'N/A';
-  const userPhone = order.phone || 'N/A';
+  const userPhone = order.phone || order.user?.phone || 'N/A';
   
   const street = order.shippingAddress?.street || 'N/A';
   const city = order.shippingAddress?.city || 'N/A';
@@ -383,7 +383,7 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'normal');
     const name = order.user?.name || 'Customer';
     const email = order.user?.email || 'N/A';
-    const phone = order.phone || 'N/A';
+    const phone = order.phone || order.user?.phone || 'N/A';
     const street = order.shippingAddress?.street || 'N/A';
     const city = order.shippingAddress?.city || 'N/A';
     const state = order.shippingAddress?.state || 'N/A';

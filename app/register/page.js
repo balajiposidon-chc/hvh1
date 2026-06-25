@@ -27,15 +27,15 @@ export default function RegisterPage() {
         setMessage('');
 
         // Frontend validation
-        const nameRegex = /^[a-zA-Z\s]+$/;
+        const nameRegex = /^[a-zA-Z\s\-]+$/;
         if (!nameRegex.test(name.trim())) {
-            setError('Full Name can only contain letters and spaces.');
+            setError('Full Name can only contain letters, spaces, and hyphens.');
             return;
         }
 
-        const phoneRegex = /^\+?[0-9\s\-()]{10,15}$/;
+        const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(phone.trim())) {
-            setError('Invalid phone number format. Must be 10-15 digits.');
+            setError('Phone number must be exactly 10 numeric digits.');
             return;
         }
 
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                       <input 
                         type="text" 
                         value={name} 
-                        onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z\s]/g, ''))} 
+                        onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z\s\-]/g, ''))} 
                         required
                         placeholder="Enter full name (letters and spaces only)"
                         className="w-100 border-0 bg-transparent text-sm"
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                         <input 
                           type="text" 
                           value={phone} 
-                          onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\-()\s]/g, ''))} 
+                          onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))} 
                           required
                           placeholder="Phone number"
                           className="w-100 border-0 bg-transparent text-sm"
