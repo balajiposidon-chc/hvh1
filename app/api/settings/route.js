@@ -26,7 +26,10 @@ export async function GET() {
         address: setting.address || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551',
         phone: setting.phone || '+91 94471 23456',
         email: setting.contactEmail || 'info@hillandvalley.com',
-        logo: setting.logo
+        logo: setting.logo,
+        currency: setting.currency || 'INR',
+        taxRate: setting.taxRate !== undefined ? setting.taxRate : 5,
+        shippingFee: setting.shippingFee !== undefined ? setting.shippingFee : 0
       }
     });
   } catch (err) {

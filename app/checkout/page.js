@@ -17,6 +17,8 @@ export default function CheckoutPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [currency, setCurrency] = useState('INR');
+    const [taxRate, setTaxRate] = useState(5);
+    const [flatShippingFee, setFlatShippingFee] = useState(0);
 
     useEffect(() => {
         const updateCurrency = () => {
@@ -24,6 +26,21 @@ export default function CheckoutPage() {
         };
         updateCurrency();
         window.addEventListener('currencyChange', updateCurrency);
+
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.settings) {
+                    setTaxRate(data.settings.taxRate !== undefined ? data.settings.taxRate : 5);
+                    setFlatShippingFee(data.settings.shippingFee !== undefined ? data.settings.shippingFee : 0);
+                }
+            } catch (err) {
+                console.error("Failed to load settings in checkout page", err);
+            }
+        }
+        fetchSettings();
+
         return () => window.removeEventListener('currencyChange', updateCurrency);
     }, []);
 
@@ -39,8 +56,8 @@ export default function CheckoutPage() {
         return sum + itemPrice * item.quantity;
     }, 0);
 
-    const shippingFee = subtotal > 1000 || subtotal === 0 ? 0 : 99;
-    const tax = Number((subtotal * 0.05).toFixed(2));
+    const shippingFee = subtotal === 0 ? 0 : flatShippingFee;
+    const tax = Number((subtotal * (taxRate / 100)).toFixed(2));
     const total = subtotal + shippingFee + tax;
 
     const handlePlaceOrder = async (event) => {

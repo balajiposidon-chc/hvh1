@@ -1,11 +1,10 @@
-/**
- * Utility helper to handle order invoice printing and PDF downloading.
- */
+function getCurrencySymbol(currencyCode) {
+  if (currencyCode === 'USD') return '$';
+  if (currencyCode === 'EUR') return '€';
+  if (currencyCode === 'GBP') return '£';
+  return '₹';
+}
 
-/**
- * Opens a print dialog with a beautifully formatted HTML invoice.
- * @param {Object} order - The order document object.
- */
 export async function printInvoiceHTML(order) {
   if (!order) return;
 
@@ -13,6 +12,9 @@ export async function printInvoiceHTML(order) {
   let defaultAddress = 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
   let defaultPhone = '+91 94471 23456';
   let defaultEmail = 'info@hillandvalley.com';
+  let defaultCurrency = 'INR';
+  let defaultTaxRate = 5;
+  let defaultShippingFee = 0;
 
   try {
     const res = await fetch('/api/settings');
@@ -22,10 +24,19 @@ export async function printInvoiceHTML(order) {
       defaultAddress = data.settings.address || defaultAddress;
       defaultPhone = data.settings.phone || defaultPhone;
       defaultEmail = data.settings.email || defaultEmail;
+      defaultCurrency = data.settings.currency || defaultCurrency;
+      defaultTaxRate = data.settings.taxRate !== undefined ? data.settings.taxRate : defaultTaxRate;
+      defaultShippingFee = data.settings.shippingFee !== undefined ? data.settings.shippingFee : defaultShippingFee;
     }
   } catch (err) {
     console.error("Failed to fetch settings, using default fallback", err);
   }
+
+  const currencySymbol = getCurrencySymbol(defaultCurrency);
+  const subtotal = order.itemsPrice || (order.orderItems || []).reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = subtotal === 0 ? 0 : defaultShippingFee;
+  const tax = Number((subtotal * (defaultTaxRate / 100)).toFixed(2));
+  const total = subtotal + shipping + tax;
 
   const orderId = order._id ? order._id.toString().toUpperCase() : 'N/A';
   const orderShortId = orderId.length > 6 ? orderId.slice(-6) : orderId;
@@ -54,17 +65,12 @@ export async function printInvoiceHTML(order) {
         <div style="font-weight: bold; color: #1e293b;">${item.name}</div>
       </td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${item.hsnCode || '0908'}</td>
-      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${item.gstRate !== undefined ? item.gstRate : 5}%</td>
-      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">₹${item.price.toLocaleString()}</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; font-family: monospace;">${defaultTaxRate}%</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${currencySymbol}${item.price.toLocaleString()}</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity} ${item.unit || 'piece'}</td>
-      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #1e293b;">₹${(item.price * item.quantity).toLocaleString()}</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #1e293b;">${currencySymbol}${(item.price * item.quantity).toLocaleString()}</td>
     </tr>
   `).join('');
-
-  const subtotal = order.itemsPrice || 0;
-  const shipping = order.shippingPrice || 0;
-  const tax = order.taxPrice || 0;
-  const total = order.totalPrice || order.total || 0;
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
@@ -268,19 +274,19 @@ export async function printInvoiceHTML(order) {
           <table class="summary-table">
             <tr>
               <td style="color: #64748b;">Subtotal</td>
-              <td style="text-align: right; font-weight: 600;">₹${subtotal.toLocaleString()}</td>
+              <td style="text-align: right; font-weight: 600;">${currencySymbol}${subtotal.toLocaleString()}</td>
             </tr>
             <tr>
               <td style="color: #64748b;">Shipping Fee</td>
-              <td style="text-align: right; font-weight: 600;">₹${shipping.toLocaleString()}</td>
+              <td style="text-align: right; font-weight: 600;">${currencySymbol}${shipping.toLocaleString()}</td>
             </tr>
             <tr>
               <td style="color: #64748b;">GST / Tax</td>
-              <td style="text-align: right; font-weight: 600;">₹${tax.toLocaleString()}</td>
+              <td style="text-align: right; font-weight: 600;">${currencySymbol}${tax.toLocaleString()}</td>
             </tr>
             <tr class="total-row">
               <td>Total Amount</td>
-              <td style="text-align: right;">₹${total.toLocaleString()}</td>
+              <td style="text-align: right;">${currencySymbol}${total.toLocaleString()}</td>
             </tr>
           </table>
         </div>
@@ -326,6 +332,9 @@ export async function downloadInvoicePDF(order) {
     let defaultAddress = 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
     let defaultPhone = '+91 94471 23456';
     let defaultEmail = 'info@hillandvalley.com';
+    let defaultCurrency = 'INR';
+    let defaultTaxRate = 5;
+    let defaultShippingFee = 0;
 
     try {
       const res = await fetch('/api/settings');
@@ -335,10 +344,19 @@ export async function downloadInvoicePDF(order) {
         defaultAddress = data.settings.address || defaultAddress;
         defaultPhone = data.settings.phone || defaultPhone;
         defaultEmail = data.settings.email || defaultEmail;
+        defaultCurrency = data.settings.currency || defaultCurrency;
+        defaultTaxRate = data.settings.taxRate !== undefined ? data.settings.taxRate : defaultTaxRate;
+        defaultShippingFee = data.settings.shippingFee !== undefined ? data.settings.shippingFee : defaultShippingFee;
       }
     } catch (err) {
       console.error("Failed to fetch settings, using default fallback", err);
     }
+
+    const currencySymbol = getCurrencySymbol(defaultCurrency);
+    const subtotal = order.itemsPrice || (order.orderItems || []).reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const shipping = subtotal === 0 ? 0 : defaultShippingFee;
+    const tax = Number((subtotal * (defaultTaxRate / 100)).toFixed(2));
+    const total = subtotal + shipping + tax;
 
     // Seller Details
     const store = order.store || {};
@@ -496,11 +514,11 @@ export async function downloadInvoicePDF(order) {
       doc.setFont('courier', 'normal');
       doc.text(item.hsnCode || '0908', pageWidth - 105, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'normal');
-      doc.text(`${item.gstRate !== undefined ? item.gstRate : 5}%`, pageWidth - 85, currentY + 6, { align: 'center' });
-      doc.text(`Rs. ${item.price.toLocaleString()}`, pageWidth - 63, currentY + 6, { align: 'right' });
+      doc.text(`${defaultTaxRate}%`, pageWidth - 85, currentY + 6, { align: 'center' });
+      doc.text(`${currencySymbol} ${item.price.toLocaleString()}`, pageWidth - 63, currentY + 6, { align: 'right' });
       doc.text(`${item.quantity} ${item.unit || 'piece'}`, pageWidth - 43, currentY + 6, { align: 'center' });
       doc.setFont('helvetica', 'bold');
-      doc.text(`Rs. ${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
+      doc.text(`${currencySymbol} ${(item.price * item.quantity).toLocaleString()}`, pageWidth - 18, currentY + 6, { align: 'right' });
       
       // Bottom border for row
       doc.setDrawColor(...borderGray);
@@ -512,25 +530,20 @@ export async function downloadInvoicePDF(order) {
     currentY += 5;
     const summaryX = pageWidth - 90;
     
-    const subtotal = order.itemsPrice || 0;
-    const shipping = order.shippingPrice || 0;
-    const tax = order.taxPrice || 0;
-    const total = order.totalPrice || order.total || 0;
-
     doc.setFontSize(9);
     doc.setTextColor(...textColorMuted);
     doc.setFont('helvetica', 'normal');
     
     doc.text("Subtotal:", summaryX, currentY);
-    doc.text(`Rs. ${subtotal.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`${currencySymbol} ${subtotal.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 6;
 
     doc.text("Shipping Fee:", summaryX, currentY);
-    doc.text(`Rs. ${shipping.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`${currencySymbol} ${shipping.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 6;
 
     doc.text("GST / Tax:", summaryX, currentY);
-    doc.text(`Rs. ${tax.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`${currencySymbol} ${tax.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
     currentY += 8;
 
     // Total Row
@@ -542,7 +555,7 @@ export async function downloadInvoicePDF(order) {
     doc.setFont('helvetica', 'bold');
     
     doc.text("Total Amount:", summaryX, currentY);
-    doc.text(`Rs. ${total.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
+    doc.text(`${currencySymbol} ${total.toLocaleString()}`, pageWidth - 18, currentY, { align: 'right' });
 
     // 5. Invoice Footer
     doc.setFontSize(8);
