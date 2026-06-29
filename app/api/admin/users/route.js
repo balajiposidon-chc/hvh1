@@ -56,10 +56,26 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
   }
   const body = await request.json();
-  const { name, email, password, role, status, phone } = body;
+  const { 
+    name, 
+    email, 
+    password, 
+    role, 
+    status, 
+    phone,
+    address,
+    bloodGroup,
+    idProofNumber,
+    idProofImage,
+    profileImage 
+  } = body;
   
-  if (!name || !email || !password) {
-    return NextResponse.json({ success: false, message: 'Name, email, and password are required' }, { status: 400 });
+  if (!name || !email || !password || !phone || !bloodGroup || !idProofNumber || !idProofImage || !profileImage) {
+    return NextResponse.json({ success: false, message: 'All fields (Name, Email, Password, Phone, Blood Group, ID Proof Number, ID Proof Image, Profile Image) are required.' }, { status: 400 });
+  }
+
+  if (!address || !address.street || !address.city || !address.state || !address.zipCode) {
+    return NextResponse.json({ success: false, message: 'Complete address details (Street, City, State, Zip Code) are required.' }, { status: 400 });
   }
   
   if (role === 'Super Admin' && !isSuperAdmin) {
@@ -80,7 +96,11 @@ export async function POST(request) {
       }
     }
 
-    if (phone && phone.trim() !== '') {
+    if (phone) {
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        return NextResponse.json({ success: false, message: 'Phone number must be exactly 10 digits (numbers only)' }, { status: 400 });
+      }
       const phoneExists = await User.findOne({ phone: phone.trim() });
       if (phoneExists) {
         return NextResponse.json({ success: false, message: 'Phone number is already registered' }, { status: 400 });
@@ -91,7 +111,17 @@ export async function POST(request) {
       name,
       email: email.toLowerCase(),
       password,
-      phone: phone || '',
+      phone: phone.trim(),
+      address: {
+        street: address.street.trim(),
+        city: address.city.trim(),
+        state: address.state.trim(),
+        zipCode: address.zipCode.trim()
+      },
+      bloodGroup: bloodGroup.trim(),
+      idProofNumber: idProofNumber.trim(),
+      idProofImage,
+      profileImage,
       role: role || 'Customer',
       status: status || 'active'
     });

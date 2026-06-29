@@ -24,8 +24,66 @@ export default function UserAccountsManager() {
   const [status, setStatus] = useState('active');
   const [editMode, setEditMode] = useState(false);
 
+  // New required fields
+  const [repassword, setRepassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [street, setStreet] = useState('');
+  const [city, setCity] = useState('');
+  const [stateName, setStateName] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('O+');
+  const [idProofNumber, setIdProofNumber] = useState('');
+  const [idProofImage, setIdProofImage] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+
+  const [uploadingIdImage, setUploadingIdImage] = useState(false);
+  const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
+
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  const handleImageUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (type === 'id') {
+      setUploadingIdImage(true);
+    } else {
+      setUploadingProfileImage(true);
+    }
+    setError('');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const res = await fetch('/api/uploads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: reader.result })
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          if (type === 'id') {
+            setIdProofImage(data.url);
+          } else {
+            setProfileImage(data.url);
+          }
+        } else {
+          setError(data.message || 'Image upload failed.');
+        }
+      } catch (err) {
+        console.error(err);
+        setError('Failed to upload image.');
+      } finally {
+        if (type === 'id') {
+          setUploadingIdImage(false);
+        } else {
+          setUploadingProfileImage(false);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (currentSuperAdmin) {
@@ -76,6 +134,16 @@ export default function UserAccountsManager() {
     setName('');
     setEmail('');
     setPassword('');
+    setRepassword('');
+    setPhone('');
+    setStreet('');
+    setCity('');
+    setStateName('');
+    setZipCode('');
+    setBloodGroup('O+');
+    setIdProofNumber('');
+    setIdProofImage('');
+    setProfileImage('');
     setRole('Customer');
     setStatus('active');
     setEditMode(false);
@@ -85,10 +153,43 @@ export default function UserAccountsManager() {
 
   const handleSaveUser = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || (!userId && !password.trim())) {
-      setError('Name, email, and password are required for new accounts.');
+    if (!name.trim() || !email.trim()) {
+      setError('Name and email are required.');
       return;
     }
+    
+    if (!userId) {
+      if (!password.trim()) {
+        setError('Password is required.');
+        return;
+      }
+      if (password !== repassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        setError('Contact phone number must be exactly 10 digits (numbers only).');
+        return;
+      }
+      if (!street.trim() || !city.trim() || !stateName.trim() || !zipCode.trim()) {
+        setError('All address fields (Street, City, State, Zip Code) are required.');
+        return;
+      }
+      if (!idProofNumber.trim()) {
+        setError('ID Proof Number is required.');
+        return;
+      }
+      if (!idProofImage) {
+        setError('ID Proof Image is required. Please upload it.');
+        return;
+      }
+      if (!profileImage) {
+        setError('Profile Image is required. Please upload it.');
+        return;
+      }
+    }
+
     setError('');
     setMessage('');
     setSaving(true);
@@ -114,7 +215,24 @@ export default function UserAccountsManager() {
         const res = await fetch('/api/admin/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role, status })
+          body: JSON.stringify({ 
+            name, 
+            email, 
+            password, 
+            role, 
+            status, 
+            phone,
+            address: {
+              street,
+              city,
+              state: stateName,
+              zipCode
+            },
+            bloodGroup,
+            idProofNumber,
+            idProofImage,
+            profileImage
+          })
         });
         const data = await res.json();
         if (res.ok && data.success) {
@@ -329,6 +447,161 @@ export default function UserAccountsManager() {
                       className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label htmlFor="repassword-input" className="form-label text-neutral-700 small fw-semibold">Re-enter Password</label>
+                    <input 
+                      id="repassword-input"
+                      type="password" 
+                      value={repassword} 
+                      onChange={(e) => setRepassword(e.target.value)} 
+                      placeholder="Confirm account password"
+                      className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="phone-input" className="form-label text-neutral-700 small fw-semibold">Phone Number (10 Digits)</label>
+                    <input 
+                      id="phone-input"
+                      type="tel" 
+                      value={phone} 
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/g, '');
+                        if (val.length <= 10) setPhone(val);
+                      }} 
+                      placeholder="e.g. 9876543210"
+                      className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="street-input" className="form-label text-neutral-700 small fw-semibold">Street Address</label>
+                      <input 
+                        id="street-input"
+                        type="text" 
+                        value={street} 
+                        onChange={(e) => setStreet(e.target.value)} 
+                        placeholder="Street"
+                        className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="city-input" className="form-label text-neutral-700 small fw-semibold">City</label>
+                      <input 
+                        id="city-input"
+                        type="text" 
+                        value={city} 
+                        onChange={(e) => setCity(e.target.value)} 
+                        placeholder="City"
+                        className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label htmlFor="state-input" className="form-label text-neutral-700 small fw-semibold">State</label>
+                      <input 
+                        id="state-input"
+                        type="text" 
+                        value={stateName} 
+                        onChange={(e) => setStateName(e.target.value)} 
+                        placeholder="State"
+                        className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="zipcode-input" className="form-label text-neutral-700 small fw-semibold">Zip Code</label>
+                      <input 
+                        id="zipcode-input"
+                        type="text" 
+                        value={zipCode} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setZipCode(val);
+                        }} 
+                        placeholder="Zip code"
+                        className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="blood-group-select" className="form-label text-neutral-700 small fw-semibold">Blood Group</label>
+                    <select 
+                      id="blood-group-select"
+                      value={bloodGroup} 
+                      onChange={(e) => setBloodGroup(e.target.value)} 
+                      className="form-select rounded-xl p-3 bg-neutral-50 border-0 text-sm w-full outline-none"
+                      required
+                    >
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="id-proof-input" className="form-label text-neutral-700 small fw-semibold">ID Proof Number</label>
+                    <input 
+                      id="id-proof-input"
+                      type="text" 
+                      value={idProofNumber} 
+                      onChange={(e) => setIdProofNumber(e.target.value)} 
+                      placeholder="e.g. Passport or Aadhaar number"
+                      className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="id-proof-image-file" className="form-label text-neutral-700 small fw-semibold">Upload ID Proof Image</label>
+                    <input 
+                      id="id-proof-image-file"
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'id')} 
+                      className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                      required={!idProofImage}
+                    />
+                    {uploadingIdImage && <div className="text-xs text-neutral-500 mt-1">Uploading ID Proof...</div>}
+                    {idProofImage && (
+                      <div className="mt-2 border rounded-xl p-1 d-inline-block">
+                        <img src={idProofImage} alt="ID Proof Preview" className="object-cover rounded-lg" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="profile-image-file" className="form-label text-neutral-700 small fw-semibold">Upload Profile Image</label>
+                    <input 
+                      id="profile-image-file"
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'profile')} 
+                      className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                      required={!profileImage}
+                    />
+                    {uploadingProfileImage && <div className="text-xs text-neutral-500 mt-1">Uploading Profile...</div>}
+                    {profileImage && (
+                      <div className="mt-2 border rounded-xl p-1 d-inline-block">
+                        <img src={profileImage} alt="Profile Preview" className="object-cover rounded-lg" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
+                      </div>
+                    )}
                   </div>
                 </>
               )}

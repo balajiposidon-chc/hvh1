@@ -17,7 +17,11 @@ const UserSchema = new mongoose.Schema({
     city: String,
     state: String,
     zipCode: String
-  }
+  },
+  bloodGroup: { type: String },
+  idProofNumber: { type: String },
+  idProofImage: { type: String },
+  profileImage: { type: String }
 }, { timestamps: true });
 
 UserSchema.pre('save', async function(next) {
