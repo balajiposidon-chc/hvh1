@@ -441,6 +441,26 @@ footer a:hover {
   opacity: 0.45;
 }
 
+.bg-cherry {
+  background-color: var(--cherry-red) !important;
+}
+
+.bg-cherry-dark, .hover\:bg-cherry-dark:hover {
+  background-color: var(--cherry-dark) !important;
+}
+
+.border-cherry {
+  border-color: var(--cherry-red) !important;
+}
+
+.border-cherry-light {
+  border-color: var(--cherry-light, rgba(210, 20, 58, 0.15)) !important;
+}
+
+.hover-bg-cherry-light:hover {
+  background-color: var(--cherry-light, rgba(210, 20, 58, 0.15)) !important;
+}
+
 /* Fix Admin Panel & prevent theme customization from affecting it */
 .admin-panel-fixed {
   --dynamic-color-scheme: light !important;
