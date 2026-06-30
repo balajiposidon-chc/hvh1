@@ -717,23 +717,23 @@ export default function ProductDetailPage() {
           <h4 className="fw-bold text-dark mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>Cooking Tips & Recommendations</h4>
           <div className="row g-4">
             <div className="col-md-6">
-              <div className="border-start border-cherry border-3 ps-3 mb-4">
-                <h6 className="fw-bold text-dark">Suggested Culinary Uses</h6>
-                <p className="text-muted small">{product.culinaryUses || "Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces."}</p>
+              <div className="bg-white p-4 rounded-4 shadow-sm border border-light-subtle mb-4" style={{ transition: 'all 0.3s' }}>
+                <h6 className="fw-bold text-dark mb-2">Suggested Culinary Uses</h6>
+                <p className="text-muted small mb-0">{product.culinaryUses || "Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces."}</p>
               </div>
-              <div className="border-start border-cherry border-3 ps-3">
-                <h6 className="fw-bold text-dark">Authentic Sourcing Guarantee</h6>
-                <p className="text-muted small">{product.sourcingGuarantee || "Ethically hand-picked from family estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention."}</p>
+              <div className="bg-white p-4 rounded-4 shadow-sm border border-light-subtle" style={{ transition: 'all 0.3s' }}>
+                <h6 className="fw-bold text-dark mb-2">Authentic Sourcing Guarantee</h6>
+                <p className="text-muted small mb-0">{product.sourcingGuarantee || "Ethically hand-picked from family estates in high-altitude zones, dried in temperature-controlled spaces to protect flavor retention."}</p>
               </div>
             </div>
             <div className="col-md-6">
-              <div className="border-start border-cherry border-3 ps-3 mb-4">
-                <h6 className="fw-bold text-dark">Storage & Care</h6>
-                <p className="text-muted small">{product.storageCare || "Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils."}</p>
+              <div className="bg-white p-4 rounded-4 shadow-sm border border-light-subtle mb-4" style={{ transition: 'all 0.3s' }}>
+                <h6 className="fw-bold text-dark mb-2">Storage & Care</h6>
+                <p className="text-muted small mb-0">{product.storageCare || "Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils."}</p>
               </div>
-              <div className="border-start border-cherry border-3 ps-3">
-                <h6 className="fw-bold text-dark">Allergen Safety</h6>
-                <p className="text-muted small">{product.allergenSafety || "Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment."}</p>
+              <div className="bg-white p-4 rounded-4 shadow-sm border border-light-subtle" style={{ transition: 'all 0.3s' }}>
+                <h6 className="fw-bold text-dark mb-2">Allergen Safety</h6>
+                <p className="text-muted small mb-0">{product.allergenSafety || "Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment."}</p>
               </div>
             </div>
           </div>
