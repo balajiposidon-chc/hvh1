@@ -530,23 +530,23 @@ export default function ProductDetailPage() {
               )}
 
               {/* Quality Badges */}
-              <div className="row g-3 mt-3 text-center">
+              <div className="row g-2 mt-3 text-center">
                 <div className="col-4">
-                  <div className="p-3 bg-gold-light rounded-3 border border-light">
-                    <Leaf size={20} className="text-success mb-2" />
-                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>100% Organic</p>
+                  <div className="p-3 bg-gold-light rounded-3 border border-light h-100 d-flex align-items-center justify-content-center gap-2">
+                    <Leaf size={16} className="text-success flex-shrink-0" />
+                    <span className="fw-semibold text-dark text-nowrap" style={{ fontSize: '0.75rem' }}>100% Organic</span>
                   </div>
                 </div>
                 <div className="col-4">
-                  <div className="p-3 bg-gold-light rounded-3 border border-light">
-                    <ShieldCheck size={20} className="text-cherry mb-2" />
-                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>Lab Certified</p>
+                  <div className="p-3 bg-gold-light rounded-3 border border-light h-100 d-flex align-items-center justify-content-center gap-2">
+                    <ShieldCheck size={16} className="text-cherry flex-shrink-0" />
+                    <span className="fw-semibold text-dark text-nowrap" style={{ fontSize: '0.75rem' }}>Lab Certified</span>
                   </div>
                 </div>
                 <div className="col-4">
-                  <div className="p-3 bg-gold-light rounded-3 border border-light">
-                    <Truck size={20} className="text-warning mb-2" />
-                    <p className="fw-semibold small text-dark mb-0" style={{ fontSize: '0.75rem' }}>Secure Packing</p>
+                  <div className="p-3 bg-gold-light rounded-3 border border-light h-100 d-flex align-items-center justify-content-center gap-2">
+                    <Truck size={16} className="text-warning flex-shrink-0" />
+                    <span className="fw-semibold text-dark text-nowrap" style={{ fontSize: '0.75rem' }}>Secure Packing</span>
                   </div>
                 </div>
               </div>
