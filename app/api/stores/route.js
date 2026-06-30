@@ -7,6 +7,7 @@ import connectToDatabase from '@/lib/mongodb';
 import Store from '@/models/Store';
 import Role from '@/models/Role';
 import User from '@/models/User';
+import { createSystemNotification } from '@/utils/notification';
 
 async function hasStorePermission() {
   const session = await getServerSession(authOptions);
@@ -54,6 +55,14 @@ export async function POST(req) {
     }
 
     const newStore = await Store.create(data);
+    const session = await getServerSession(authOptions);
+    await createSystemNotification({
+      action: 'add',
+      resourceType: 'store',
+      resourceId: newStore._id.toString(),
+      details: `Store '${newStore.name}'`,
+      sessionUser: session?.user
+    });
     return NextResponse.json({ success: true, store: newStore });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

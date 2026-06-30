@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
+import { createSystemNotification } from '@/utils/notification';
 
 async function checkAuth() {
   const session = await getServerSession(authOptions);
@@ -64,6 +65,13 @@ export async function PUT(request, { params }) {
     if (phone) order.phone = phone;
     
     await order.save();
+    await createSystemNotification({
+      action: 'edit',
+      resourceType: 'order',
+      resourceId: order._id.toString(),
+      details: `Order #ORD-${order._id.toString().toUpperCase().slice(-6)}`,
+      sessionUser: session?.user
+    });
     return NextResponse.json({ success: true, message: 'Order updated successfully', order });
   } catch (err) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -94,6 +102,14 @@ export async function DELETE(request, { params }) {
         return NextResponse.json({ success: false, message: 'Unauthorized: Order belongs to another store' }, { status: 403 });
       }
     }
+
+    await createSystemNotification({
+      action: 'delete',
+      resourceType: 'order',
+      resourceId: params.id,
+      details: `Order #ORD-${order._id.toString().toUpperCase().slice(-6)}`,
+      sessionUser: session?.user
+    });
 
     await order.deleteOne();
     return NextResponse.json({ success: true, message: 'Order deleted successfully' });

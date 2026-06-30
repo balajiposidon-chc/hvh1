@@ -107,6 +107,15 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleMarkAllRead = async () => {
+    try {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      await fetch('/api/admin/notifications', { method: 'PUT' });
+    } catch (err) {
+      console.error('Failed to mark notifications read:', err);
+    }
+  };
+
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -158,7 +167,7 @@ export default function SuperAdminDashboard() {
                   <div className="px-4 py-2 border-b border-neutral-100 flex justify-between items-center bg-white">
                     <span className="font-bold text-neutral-800 text-sm">System Notifications</span>
                     <button 
-                      onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                      onClick={handleMarkAllRead}
                       className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       Mark all read
@@ -208,27 +217,24 @@ export default function SuperAdminDashboard() {
           {/* KPI Cards */}
           <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[
-              { title: 'Total Revenue', value: `₹${(stats?.summary?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: IndianRupee, bg: 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md text-white border-0' },
-              { title: 'Total Orders', value: stats?.summary?.totalOrders || 0, icon: ShoppingCart, bg: 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md text-white border-0' },
-              { title: 'Total Products', value: stats?.summary?.totalProducts || 0, icon: Package, bg: 'bg-gradient-to-br from-purple-500 to-indigo-700 shadow-md text-white border-0' },
-              { title: 'Total Users', value: stats?.summary?.totalCustomers || 0, icon: Users, bg: 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-md text-white border-0' }
+              { title: 'Total Revenue', value: `₹${(stats?.summary?.totalRevenue || 0).toLocaleString('en-IN')}`, icon: IndianRupee, color: 'text-primary', bg: 'bg-primary/10' },
+              { title: 'Total Orders', value: stats?.summary?.totalOrders || 0, icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { title: 'Total Products', value: stats?.summary?.totalProducts || 0, icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+              { title: 'Total Users', value: stats?.summary?.totalCustomers || 0, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' }
             ].map((kpi, idx) => (
               <motion.div variants={fadeIn} key={idx}>
-                <div className={`rounded-2xl p-6 hover:shadow-lg transition-all duration-300 ${kpi.bg}`}>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="opacity-90 font-bold mb-1 text-sm uppercase tracking-wider">{kpi.title}</p>
-                      <h3 className="text-3xl font-extrabold text-white">{kpi.value}</h3>
+                      <p className="text-neutral-500 font-medium mb-1">{kpi.title}</p>
+                      <h3 className="text-2xl font-bold text-neutral-900">{kpi.value}</h3>
                     </div>
-                    <div className="p-3 rounded-xl bg-white bg-opacity-20 backdrop-blur-sm">
-                      <kpi.icon className="w-6 h-6 text-white" />
+                    <div className={`p-3 rounded-xl ${kpi.bg}`}>
+                      <kpi.icon className={`w-6 h-6 ${kpi.color}`} />
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center text-xs font-extrabold bg-white bg-opacity-35 text-white px-2 py-0.5 rounded-md">
-                      <ArrowUp className="w-3 h-3 mr-1" /> 100%
-                    </span>
-                    <span className="text-xs text-white opacity-85 font-medium">Real-time Data</span>
+                    <span className="text-xs text-neutral-400 font-bold uppercase tracking-wide">System-wide metrics</span>
                   </div>
                 </div>
               </motion.div>

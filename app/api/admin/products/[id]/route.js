@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import Category from '@/models/Category';
+import { createSystemNotification } from '@/utils/notification';
 
 export async function PUT(request, { params }) {
     const session = await getServerSession(authOptions);
@@ -71,6 +72,13 @@ export async function PUT(request, { params }) {
     }
 
     const product = await Product.findByIdAndUpdate(params.id, updatedData, { new: true });
+    await createSystemNotification({
+        action: 'edit',
+        resourceType: 'product',
+        resourceId: params.id,
+        details: `Product '${product.name}'`,
+        sessionUser: session?.user
+    });
     return NextResponse.json({ message: 'Updated product' });
 }
 
@@ -100,6 +108,13 @@ export async function DELETE(request, { params }) {
             }
         }
 
+        await createSystemNotification({
+            action: 'delete',
+            resourceType: 'product',
+            resourceId: params.id,
+            details: `Product '${existingProduct.name}'`,
+            sessionUser: session?.user
+        });
         await existingProduct.deleteOne();
         return NextResponse.json({ message: 'Product deleted' });
     } catch (err) {

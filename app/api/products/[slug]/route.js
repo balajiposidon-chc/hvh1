@@ -7,6 +7,7 @@ import connect from '../../../../services/db';
 import Product from '../../../../models/Product';
 import Store from '../../../../models/Store';
 import User from '../../../../models/User';
+import { createSystemNotification } from '@/utils/notification';
 
 export async function GET(request, { params }) {
   await connect();
@@ -34,6 +35,14 @@ export async function PUT(request, { params }) {
   const data = await request.json();
   const product = await Product.findOneAndUpdate({ slug: params.slug }, data, { new: true });
   if (!product) return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
+  const session = await getServerSession(authOptions);
+  await createSystemNotification({
+    action: 'edit',
+    resourceType: 'product',
+    resourceId: product._id.toString(),
+    details: `Product '${product.name}'`,
+    sessionUser: session?.user
+  });
   return NextResponse.json({ product });
 }
 
@@ -41,5 +50,13 @@ export async function DELETE(request, { params }) {
   await connect();
   const product = await Product.findOneAndUpdate({ slug: params.slug }, { status: 'archived' }, { new: true });
   if (!product) return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
+  const session = await getServerSession(authOptions);
+  await createSystemNotification({
+    action: 'delete',
+    resourceType: 'product',
+    resourceId: product._id.toString(),
+    details: `Product '${product.name}'`,
+    sessionUser: session?.user
+  });
   return NextResponse.json({ product, message: 'Product archived.' });
 }
