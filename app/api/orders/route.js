@@ -6,6 +6,7 @@ import Order from '@/lib/models/Order';
 import Product from '@/lib/models/Product';
 import Store from '@/models/Store';
 import User from '@/models/User';
+import { createSystemNotification } from '@/utils/notification';
 
 export async function GET(request) {
     const session = await getServerSession(authOptions);
@@ -129,6 +130,13 @@ export async function POST(request) {
         });
 
         await order.save();
+        await createSystemNotification({
+          action: 'add',
+          resourceType: 'order',
+          resourceId: order._id.toString(),
+          details: `Order #ORD-${order._id.toString().toUpperCase().slice(-6)}`,
+          sessionUser: session?.user
+        });
 
         // Decrement product inventory
         for (const item of orderItems) {

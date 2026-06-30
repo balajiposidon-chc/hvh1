@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Store from '@/models/Store';
 import User from '@/models/User';
+import { createSystemNotification } from '@/utils/notification';
 
 async function isSuperAdmin() {
   const session = await getServerSession(authOptions);
@@ -43,6 +44,13 @@ export async function PUT(request, { params }) {
     }
 
     await store.save();
+    await createSystemNotification({
+      action: 'edit',
+      resourceType: 'store',
+      resourceId: store._id.toString(),
+      details: `Store '${store.name}'`,
+      sessionUser: session?.user
+    });
     const populatedStore = await Store.findById(store._id).populate('manager');
     return NextResponse.json({ success: true, store: populatedStore });
   } catch (error) {
@@ -62,6 +70,15 @@ export async function DELETE(request, { params }) {
     if (!store) {
       return NextResponse.json({ success: false, message: 'Store not found' }, { status: 404 });
     }
+
+    const session = await getServerSession(authOptions);
+    await createSystemNotification({
+      action: 'delete',
+      resourceType: 'store',
+      resourceId: params.id,
+      details: `Store '${store.name}'`,
+      sessionUser: session?.user
+    });
 
     await store.deleteOne();
     return NextResponse.json({ success: true, message: 'Store deleted successfully' });

@@ -9,6 +9,7 @@ import Category from '@/models/Category';
 import Store from '@/models/Store';
 import User from '@/models/User';
 import { verifyJwtToken } from '@/utils/auth';
+import { createSystemNotification } from '@/utils/notification';
 
 export async function GET(req) {
   try {
@@ -63,6 +64,14 @@ export async function POST(req) {
     await dbConnect();
     const body = await req.json();
     const product = await Product.create(body);
+    const session = await getServerSession(authOptions);
+    await createSystemNotification({
+        action: 'add',
+        resourceType: 'product',
+        resourceId: product._id.toString(),
+        details: `Product '${product.name}'`,
+        sessionUser: session?.user || decoded
+    });
 
     return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error) {

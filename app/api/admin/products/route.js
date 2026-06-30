@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectToDatabase from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import Category from '@/models/Category';
+import { createSystemNotification } from '@/utils/notification';
 
 export async function POST(request) {
     const session = await getServerSession(authOptions);
@@ -64,5 +65,12 @@ export async function POST(request) {
         allergenSafety: body.allergenSafety || '',
     });
     await product.save();
+    await createSystemNotification({
+        action: 'add',
+        resourceType: 'product',
+        resourceId: product._id.toString(),
+        details: `Product '${product.name}'`,
+        sessionUser: session?.user
+    });
     return NextResponse.json({ message: 'Created product', id: product._id.toString() }, { status: 201 });
 }

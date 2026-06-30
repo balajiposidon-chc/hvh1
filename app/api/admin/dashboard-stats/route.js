@@ -8,6 +8,7 @@ import Order from '@/lib/models/Order';
 import Product from '@/lib/models/Product';
 import User from '@/models/User';
 import Store from '@/models/Store';
+import Notification from '@/models/Notification';
 
 export async function GET(req) {
   try {
@@ -67,42 +68,27 @@ export async function GET(req) {
     const recentOrders = orders.slice(0, 10);
 
     // 6. Dynamic System Notifications
-    const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).limit(3).lean();
-    const blockedUsers = await User.find({ status: 'blocked' }).limit(2).lean();
+    const dbNotifications = await Notification.find().sort({ createdAt: -1 }).limit(25).lean();
 
-    const notifications = [];
-    let notificationId = 1;
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+      if (seconds < 60) return 'Just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
 
-    lowStockProducts.forEach(p => {
-      notifications.push({
-        id: notificationId++,
-        title: 'Low Stock Warning',
-        message: `${p.name} (SKU: HV-${p.slug?.toUpperCase() || p._id.toString().slice(-6)}) is below 5 units in central stock.`,
-        type: 'warning',
-        time: 'Just now',
-        read: false
-      });
-    });
-
-    blockedUsers.forEach(u => {
-      notifications.push({
-        id: notificationId++,
-        title: 'Blocked User Account',
-        message: `Account for ${u.name} (${u.email}) is currently blocked.`,
-        type: 'info',
-        time: 'Active',
-        read: false
-      });
-    });
-
-    notifications.push({
-      id: notificationId++,
-      title: 'Database Check Passed',
-      message: 'System audit and database references checked successfully.',
-      type: 'success',
-      time: '1 hour ago',
-      read: false
-    });
+    const notifications = dbNotifications.map(n => ({
+      id: n._id.toString(),
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      time: timeAgo(n.createdAt),
+      read: n.read
+    }));
 
     return NextResponse.json({
       success: true,

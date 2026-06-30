@@ -44,6 +44,7 @@ export default function SuperAdminSettingsPage() {
   const [facebook, setFacebook] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -87,6 +88,7 @@ export default function SuperAdminSettingsPage() {
         setFacebook(s.socialLinks?.facebook || '');
         setInstagram(s.socialLinks?.instagram || '');
         setTwitter(s.socialLinks?.twitter || '');
+        setWhatsapp(s.socialLinks?.whatsapp || '');
       }
     } catch (e) {
       console.error(e);
@@ -143,7 +145,8 @@ export default function SuperAdminSettingsPage() {
           heroBtnLink,
           facebook,
           instagram,
-          twitter
+          twitter,
+          whatsapp
         })
       });
       const data = await res.json();
@@ -504,6 +507,16 @@ export default function SuperAdminSettingsPage() {
                   type="text" 
                   value={twitter} 
                   onChange={(e) => setTwitter(e.target.value)} 
+                  className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
+                />
+              </div>
+              <div>
+                <label className="form-label text-neutral-700 small fw-semibold">WhatsApp Number/Link</label>
+                <input 
+                  type="text" 
+                  value={whatsapp} 
+                  onChange={(e) => setWhatsapp(e.target.value)} 
+                  placeholder="e.g. +919447123456 or chat link"
                   className="form-control rounded-xl p-3 bg-neutral-50 border-0 text-sm"
                 />
               </div>
