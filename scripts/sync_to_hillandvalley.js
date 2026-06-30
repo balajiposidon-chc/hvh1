@@ -5,6 +5,9 @@ const srcDir = 'g:\\workspace\\eccomerce';
 const destDir = 'g:\\workspace\\hillandvalley';
 
 const filesToSync = [
+  'models/Notification.js',
+  'utils/notification.js',
+  'app/api/admin/notifications/route.js',
   'models/Product.js',
   'models/User.js',
   'app/admin/page.js',
@@ -52,6 +55,7 @@ const filesToSync = [
   'app/api/orders/[id]/route.js',
   'components/AdminProductForm.js',
   'app/product/[slug]/page.js',
+  'app/products/[slug]/page.js',
   'app/store-panel/page.js',
   'app/store-panel/products/page.js',
   'app/store-panel/products/new/page.js',
