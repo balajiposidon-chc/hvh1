@@ -54,6 +54,7 @@ export async function PUT(request) {
               facebook: body.facebook !== undefined ? body.facebook : setting.socialLinks?.facebook,
               instagram: body.instagram !== undefined ? body.instagram : setting.socialLinks?.instagram,
               twitter: body.twitter !== undefined ? body.twitter : setting.socialLinks?.twitter,
+              whatsapp: body.whatsapp !== undefined ? body.whatsapp : setting.socialLinks?.whatsapp,
           };
           
           // Customizer settings

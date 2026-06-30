@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Star, ShoppingBag, ArrowLeft, ShieldCheck, Leaf, Truck, Check, ChevronRight } from 'lucide-react';
+import { Star, ShoppingBag, ArrowLeft, ShieldCheck, Leaf, Truck, Check, ChevronRight, Share2, Download, Send } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
@@ -15,6 +15,189 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [currency, setCurrency] = useState('INR');
+  const [settings, setSettings] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [activeSharePlatform, setActiveSharePlatform] = useState('');
+  const [brochureUrl, setBrochureUrl] = useState('');
+  const [brochureGenerating, setBrochureGenerating] = useState(false);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          setSettings(data.settings);
+        }
+      } catch (err) {
+        console.error("Failed to load settings", err);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleShareClick = async (platform) => {
+    setActiveSharePlatform(platform);
+    setShowShareModal(true);
+    setBrochureGenerating(true);
+    try {
+      const url = await generateBrochure();
+      setBrochureUrl(url);
+    } catch (err) {
+      console.error("Failed to generate brochure", err);
+    } finally {
+      setBrochureGenerating(false);
+    }
+  };
+
+  const getWhatsAppShareLink = () => {
+    const text = `*Hill & Valley Spices* - Check out this premium product: *${product.name}*\nPrice: ${formatCurrency(product.discountPrice > 0 ? product.discountPrice : product.price)} / ${product.unit || 'piece'}\nSourced from nature, perfected by tradition.\n\nOrder online here: ${window.location.href}`;
+    const whatsappNum = settings?.socialLinks?.whatsapp;
+    if (whatsappNum) {
+      const cleanNum = whatsappNum.replace(/[^\d+]/g, '');
+      return `https://api.whatsapp.com/send?phone=${cleanNum}&text=${encodeURIComponent(text)}`;
+    }
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  };
+
+  const copyInstagramCaption = () => {
+    const caption = `Experience the authentic purity and rich aroma of Hill & Valley Spices. Handpicked directly from organic farms in Kerala. Order ${product.name} online at www.hillandvalley.com!\n\n#spices #organic #premium #hillandvalley #indianspices #kerala #freshness`;
+    navigator.clipboard.writeText(caption);
+    alert('Caption copied to clipboard!');
+  };
+
+  const generateBrochure = async () => {
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1080;
+        const ctx = canvas.getContext('2d');
+
+        // Draw premium dark forest green background
+        const grad = ctx.createLinearGradient(0, 0, 0, 1080);
+        grad.addColorStop(0, '#1E3516');
+        grad.addColorStop(1, '#0E1A0B');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1080);
+
+        // Draw elegant gold accent border
+        ctx.strokeStyle = '#C5A880';
+        ctx.lineWidth = 15;
+        ctx.strokeRect(30, 30, 1020, 1020);
+        
+        ctx.strokeStyle = '#C5A880';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(45, 45, 990, 990);
+
+        // Header Branding
+        ctx.fillStyle = '#C5A880';
+        ctx.font = "bold 42px Georgia, serif";
+        ctx.textAlign = 'center';
+        ctx.fillText('HILL & VALLEY SPICES', 540, 110);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = "italic 24px Georgia, serif";
+        ctx.fillText('Est. 2026  •  Premium Sourced Spices', 540, 155);
+
+        // Draw a decorative divider line
+        ctx.strokeStyle = 'rgba(197, 168, 128, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(300, 180);
+        ctx.lineTo(780, 180);
+        ctx.stroke();
+
+        // Subtext / Tagline
+        ctx.fillStyle = '#E5E7EB';
+        ctx.font = "18px sans-serif";
+        ctx.fillText('SOURCED FROM NATURE, PERFECTED BY TRADITION', 540, 215);
+
+        // Load and draw product image
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = product.images?.[0] || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80';
+        
+        img.onload = () => {
+          const imgSize = 420;
+          const x = 540 - imgSize / 2;
+          const y = 260;
+
+          // Draw image shadow box
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(x + 10, y + 10, imgSize, imgSize);
+
+          // Draw gold image frame
+          ctx.strokeStyle = '#C5A880';
+          ctx.lineWidth = 10;
+          ctx.strokeRect(x - 5, y - 5, imgSize + 10, imgSize + 10);
+
+          // Draw actual product image
+          ctx.drawImage(img, x, y, imgSize, imgSize);
+
+          // Draw "PREMIUM QUALITY" circular badge
+          ctx.fillStyle = '#D2143A';
+          ctx.beginPath();
+          ctx.arc(x + imgSize - 20, y + 20, 60, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.strokeStyle = '#C5A880';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x + imgSize - 20, y + 20, 55, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = "bold 15px sans-serif";
+          ctx.fillText('PREMIUM', x + imgSize - 20, y + 12);
+          ctx.fillText('QUALITY', x + imgSize - 20, y + 32);
+
+          // Product Name
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = "bold 52px Georgia, serif";
+          ctx.fillText(product.name.toUpperCase(), 540, 770);
+
+          // Product Category
+          ctx.fillStyle = '#C5A880';
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText((product.categoryName || 'Organic Spices').toUpperCase(), 540, 820);
+
+          // Price Tag
+          ctx.fillStyle = '#22C55E';
+          ctx.font = "bold 44px sans-serif";
+          const formattedPrice = formatCurrency(product.discountPrice > 0 ? product.discountPrice : product.price);
+          ctx.fillText(`${formattedPrice} / ${product.unit || 'piece'}`, 540, 880);
+
+          // Footer info / Site Quality Guarantee
+          ctx.fillStyle = '#9CA3AF';
+          ctx.font = "italic 20px Georgia, serif";
+          ctx.fillText('Handpicked directly from regional estate farms to guarantee rich aroma.', 540, 940);
+
+          ctx.fillStyle = '#C5A880';
+          ctx.font = "bold 24px sans-serif";
+          ctx.fillText('ORDER ONLINE AT WWW.HILLANDVALLEY.COM', 540, 990);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+          resolve(dataUrl);
+        };
+
+        img.onerror = () => {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = "bold 32px sans-serif";
+          ctx.fillText('[ Image Preview ]', 540, 480);
+          
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = "bold 52px Georgia, serif";
+          ctx.fillText(product.name.toUpperCase(), 540, 770);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+          resolve(dataUrl);
+        };
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
   useEffect(() => {
     const updateCurrency = () => {
@@ -297,6 +480,31 @@ export default function ProductDetailPage() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Social Share / Flyer Generator */}
+                    <div className="mt-4 pt-3 border-top">
+                      <p className="text-muted small fw-bold mb-2 uppercase tracking-wider animate__animated animate__fadeIn" style={{ letterSpacing: '1px' }}>Generate Professional Brochure:</p>
+                      <div className="d-flex flex-wrap gap-2">
+                        <button 
+                          onClick={() => handleShareClick('whatsapp')}
+                          className="btn btn-sm btn-outline-success rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5"
+                        >
+                          <Share2 size={14} /> WhatsApp Share
+                        </button>
+                        <button 
+                          onClick={() => handleShareClick('facebook')}
+                          className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5"
+                        >
+                          <Share2 size={14} /> Facebook Post
+                        </button>
+                        <button 
+                          onClick={() => handleShareClick('instagram')}
+                          className="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5"
+                        >
+                          <Share2 size={14} /> Instagram Ad
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <button className="btn btn-secondary w-100 py-3 rounded-pill fw-bold" disabled>
@@ -335,6 +543,112 @@ export default function ProductDetailPage() {
           </div>
         </section>
       </main>
+
+      {showShareModal && (
+        <div className="modal fade show d-block animate__animated animate__fadeIn" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 border-0 shadow-lg" style={{ backgroundColor: '#fff' }}>
+              <div className="modal-header border-0 pb-0 justify-content-between p-4">
+                <h5 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                  <Share2 className="text-cherry" size={20} />
+                  <span>Product Brochure Poster</span>
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => {
+                    setShowShareModal(false);
+                    setBrochureUrl('');
+                  }}
+                  aria-label="Close"
+                  style={{ outline: 'none', border: 'none', background: 'transparent', fontSize: '1.25rem', fontWeight: 'bold' }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="modal-body p-4 text-center">
+                {brochureGenerating ? (
+                  <div className="py-5">
+                    <div className="spinner-border text-danger mb-3" role="status"></div>
+                    <p className="text-muted small">Generating professional advertisement poster...</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-muted small mb-3">Here is your dynamically generated professional brochure indicating the quality of our site:</p>
+                    
+                    {/* Brochure Preview */}
+                    {brochureUrl && (
+                      <div className="rounded-3 overflow-hidden border border-light shadow-sm mb-4" style={{ maxWidth: '280px', margin: '0 auto' }}>
+                        <img src={brochureUrl} alt="Brochure Preview" className="w-100 h-auto" />
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="d-grid gap-2 mb-3">
+                      <a 
+                        href={brochureUrl} 
+                        download={`HV_${product.name.replace(/\s+/g, '_')}_brochure.jpg`}
+                        className="btn btn-cherry rounded-pill py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 text-decoration-none text-white"
+                      >
+                        <Download size={18} />
+                        <span>Download JPEG Brochure</span>
+                      </a>
+
+                      {activeSharePlatform === 'whatsapp' && (
+                        <a 
+                          href={getWhatsAppShareLink()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-success rounded-pill py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 text-decoration-none text-white"
+                        >
+                          <Send size={18} />
+                          <span>Send on WhatsApp</span>
+                        </a>
+                      )}
+
+                      {activeSharePlatform === 'facebook' && (
+                        <a 
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-primary rounded-pill py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 text-decoration-none text-white"
+                        >
+                          <Send size={18} />
+                          <span>Share on Facebook</span>
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Instagram Specific Instructions */}
+                    {activeSharePlatform === 'instagram' && (
+                      <div className="bg-light p-3 rounded-3 text-start small border mb-3">
+                        <h6 className="fw-bold text-dark mb-2" style={{ fontSize: '0.85rem' }}>How to share on Instagram:</h6>
+                        <ol className="text-muted ps-3 mb-3" style={{ fontSize: '0.75rem' }}>
+                          <li>Click <strong>Download JPEG Brochure</strong> to save it to your device.</li>
+                          <li>Open Instagram and upload the poster to your Feed or Story.</li>
+                          <li>Copy the professional caption below to paste under your post:</li>
+                        </ol>
+                        <div className="p-2 bg-white rounded border d-flex justify-content-between align-items-center">
+                          <span className="text-muted text-truncate me-2" style={{ maxWidth: '280px', fontSize: '0.7rem' }}>
+                            Experience the authentic purity and rich aroma of Hill & Valley Spices...
+                          </span>
+                          <button 
+                            onClick={copyInstagramCaption}
+                            className="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold shrink-0"
+                            style={{ fontSize: '0.7rem' }}
+                          >
+                            Copy Caption
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

@@ -29,7 +29,8 @@ export async function GET() {
         logo: setting.logo,
         currency: setting.currency || 'INR',
         taxRate: setting.taxRate !== undefined ? setting.taxRate : 5,
-        shippingFee: setting.shippingFee !== undefined ? setting.shippingFee : 0
+        shippingFee: setting.shippingFee !== undefined ? setting.shippingFee : 0,
+        socialLinks: setting.socialLinks || {}
       }
     });
   } catch (err) {
