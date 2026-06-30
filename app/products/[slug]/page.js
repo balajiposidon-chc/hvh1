@@ -60,10 +60,26 @@ export default function ProductDetailPage() {
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   };
 
-  const copyInstagramCaption = () => {
-    const caption = `Experience the authentic purity and rich aroma of Hill & Valley Spices. Handpicked directly from organic farms in Kerala. Order ${product.name} online at www.hillandvalley.com!\n\n#spices #organic #premium #hillandvalley #indianspices #kerala #freshness`;
-    navigator.clipboard.writeText(caption);
-    alert('Caption copied to clipboard!');
+  const wrapText = (ctx, text, x, y, maxWidth, lineHeight, align = 'center') => {
+    ctx.textAlign = align;
+    const words = text.split(' ');
+    let line = '';
+    let currentY = y;
+
+    for (let n = 0; n < words.length; n++) {
+      let testLine = line + words[n] + ' ';
+      let metrics = ctx.measureText(testLine);
+      let testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        ctx.fillText(line, x, currentY);
+        line = words[n] + ' ';
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, currentY);
+    return currentY + lineHeight;
   };
 
   const generateBrochure = async () => {
@@ -71,127 +87,193 @@ export default function ProductDetailPage() {
       try {
         const canvas = document.createElement('canvas');
         canvas.width = 1080;
-        canvas.height = 1080;
+        canvas.height = 1920;
         const ctx = canvas.getContext('2d');
 
-        // Draw premium dark forest green background
-        const grad = ctx.createLinearGradient(0, 0, 0, 1080);
-        grad.addColorStop(0, '#1E3516');
-        grad.addColorStop(1, '#0E1A0B');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 1080, 1080);
+        // Draw premium cream/beige background
+        ctx.fillStyle = '#FAF6F0';
+        ctx.fillRect(0, 0, 1080, 1920);
 
-        // Draw elegant gold accent border
-        ctx.strokeStyle = '#C5A880';
-        ctx.lineWidth = 15;
-        ctx.strokeRect(30, 30, 1020, 1020);
+        // Draw elegant brown borders
+        ctx.strokeStyle = '#8C593B';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(40, 40, 1000, 1840);
         
         ctx.strokeStyle = '#C5A880';
         ctx.lineWidth = 2;
-        ctx.strokeRect(45, 45, 990, 990);
+        ctx.strokeRect(55, 55, 970, 1810);
 
-        // Header Branding
-        ctx.fillStyle = '#C5A880';
+        // Header Section
+        ctx.fillStyle = '#4A2E1B';
         ctx.font = "bold 42px Georgia, serif";
         ctx.textAlign = 'center';
-        ctx.fillText('HILL & VALLEY SPICES', 540, 110);
+        
+        const storeName = settings?.storeName || 'HILL & VALLEY SPICES';
+        ctx.fillText(storeName.toUpperCase(), 540, 130);
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = "italic 24px Georgia, serif";
-        ctx.fillText('Est. 2026  •  Premium Sourced Spices', 540, 155);
+        ctx.fillStyle = '#8C593B';
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText('PREMIUM ESTATE SPICES  •  ESTD. 2026', 540, 175);
 
-        // Draw a decorative divider line
-        ctx.strokeStyle = 'rgba(197, 168, 128, 0.4)';
+        // Horizontal elegant separator line
+        ctx.strokeStyle = 'rgba(140, 89, 59, 0.2)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(300, 180);
-        ctx.lineTo(780, 180);
+        ctx.moveTo(350, 205);
+        ctx.lineTo(730, 205);
         ctx.stroke();
 
-        // Subtext / Tagline
-        ctx.fillStyle = '#E5E7EB';
-        ctx.font = "18px sans-serif";
-        ctx.fillText('SOURCED FROM NATURE, PERFECTED BY TRADITION', 540, 215);
+        // Product Name
+        ctx.fillStyle = '#4A2E1B';
+        ctx.font = "bold 64px Georgia, serif";
+        ctx.fillText(product.name.toUpperCase(), 540, 280);
 
-        // Load and draw product image
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = product.images?.[0] || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80';
-        
-        img.onload = () => {
-          const imgSize = 420;
-          const x = 540 - imgSize / 2;
-          const y = 260;
+        ctx.fillStyle = '#8C593B';
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillText((product.categoryName || 'Organic Spices').toUpperCase(), 540, 335);
 
-          // Draw image shadow box
-          ctx.fillStyle = 'rgba(0,0,0,0.4)';
-          ctx.fillRect(x + 10, y + 10, imgSize, imgSize);
+        // Load product image
+        const productImg = new Image();
+        productImg.crossOrigin = 'anonymous';
+        productImg.src = product.images?.[0] || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80';
 
-          // Draw gold image frame
+        const drawProductImage = () => {
+          const circleX = 540;
+          const circleY = 580;
+          const radius = 200;
+
+          // Draw shadows / outer rings
           ctx.strokeStyle = '#C5A880';
-          ctx.lineWidth = 10;
-          ctx.strokeRect(x - 5, y - 5, imgSize + 10, imgSize + 10);
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.arc(circleX, circleY, radius + 4, 0, Math.PI * 2);
+          ctx.stroke();
 
-          // Draw actual product image
-          ctx.drawImage(img, x, y, imgSize, imgSize);
+          ctx.strokeStyle = '#8C593B';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(circleX, circleY, radius + 9, 0, Math.PI * 2);
+          ctx.stroke();
 
-          // Draw "PREMIUM QUALITY" circular badge
+          // Clip product image inside circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(circleX, circleY, radius, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(productImg, circleX - radius, circleY - radius, radius * 2, radius * 2);
+          ctx.restore();
+
+          // Overlap badge
           ctx.fillStyle = '#D2143A';
           ctx.beginPath();
-          ctx.arc(x + imgSize - 20, y + 20, 60, 0, Math.PI * 2);
+          ctx.arc(circleX + radius - 20, circleY - radius + 20, 55, 0, Math.PI * 2);
           ctx.fill();
           
           ctx.strokeStyle = '#C5A880';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(x + imgSize - 20, y + 20, 55, 0, Math.PI * 2);
+          ctx.arc(circleX + radius - 20, circleY - radius + 20, 50, 0, Math.PI * 2);
           ctx.stroke();
 
           ctx.fillStyle = '#FFFFFF';
-          ctx.font = "bold 15px sans-serif";
-          ctx.fillText('PREMIUM', x + imgSize - 20, y + 12);
-          ctx.fillText('QUALITY', x + imgSize - 20, y + 32);
+          ctx.textAlign = 'center';
+          ctx.font = "bold 14px sans-serif";
+          ctx.fillText('100%', circleX + radius - 20, circleY - radius + 12);
+          ctx.fillText('ORGANIC', circleX + radius - 20, circleY - radius + 32);
 
-          // Product Name
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = "bold 52px Georgia, serif";
-          ctx.fillText(product.name.toUpperCase(), 540, 770);
-
-          // Product Category
-          ctx.fillStyle = '#C5A880';
-          ctx.font = "bold 20px sans-serif";
-          ctx.fillText((product.categoryName || 'Organic Spices').toUpperCase(), 540, 820);
-
-          // Price Tag
-          ctx.fillStyle = '#22C55E';
-          ctx.font = "bold 44px sans-serif";
+          // Pricing
+          ctx.fillStyle = '#4A2E1B';
+          ctx.font = "bold 38px sans-serif";
           const formattedPrice = formatCurrency(product.discountPrice > 0 ? product.discountPrice : product.price);
-          ctx.fillText(`${formattedPrice} / ${product.unit || 'piece'}`, 540, 880);
+          ctx.fillText(`${formattedPrice} / ${product.unit || 'piece'}`, 540, 840);
 
-          // Footer info / Site Quality Guarantee
-          ctx.fillStyle = '#9CA3AF';
-          ctx.font = "italic 20px Georgia, serif";
-          ctx.fillText('Handpicked directly from regional estate farms to guarantee rich aroma.', 540, 940);
+          // Body Content Details (Full Content)
+          ctx.textAlign = 'left';
+          let currentY = 910;
 
-          ctx.fillStyle = '#C5A880';
-          ctx.font = "bold 24px sans-serif";
-          ctx.fillText('ORDER ONLINE AT WWW.HILLANDVALLEY.COM', 540, 990);
+          // Description
+          ctx.fillStyle = '#4A2E1B';
+          ctx.font = "italic 22px Georgia, serif";
+          const descText = product.description || 'Discover our premium selection of farm-fresh estate spices. Carefully sorted, graded, and vacuum sealed to retain rich aroma.';
+          currentY = wrapText(ctx, descText, 120, currentY, 840, 32, 'left');
+          
+          currentY += 24;
+
+          // Culinary Uses
+          ctx.fillStyle = '#8C593B';
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText('CULINARY USES:', 120, currentY);
+          currentY += 28;
+          ctx.fillStyle = '#5C4033';
+          ctx.font = "20px sans-serif";
+          const usesText = product.culinaryUses || 'Perfect for brewing aromatic masala chais, baking sweet pastries, or flavoring high-end rice pilaf and curry sauces.';
+          currentY = wrapText(ctx, usesText, 120, currentY, 840, 28, 'left');
+
+          currentY += 24;
+
+          // Storage & Care
+          ctx.fillStyle = '#8C593B';
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText('STORAGE & CARE:', 120, currentY);
+          currentY += 28;
+          ctx.fillStyle = '#5C4033';
+          ctx.font = "20px sans-serif";
+          const storageText = product.storageCare || 'Keep inside an airtight glass container, stored in a cool, dry, dark cupboard away from direct sunshine to retain natural moisture oils.';
+          currentY = wrapText(ctx, storageText, 120, currentY, 840, 28, 'left');
+
+          currentY += 24;
+
+          // Allergen Safety
+          ctx.fillStyle = '#8C593B';
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText('ALLERGEN SAFETY:', 120, currentY);
+          currentY += 28;
+          ctx.fillStyle = '#5C4033';
+          ctx.font = "20px sans-serif";
+          const allergenText = product.allergenSafety || 'Gluten-free, vegan-safe, and processed in a 100% peanut-free hygienic corporate packing environment.';
+          currentY = wrapText(ctx, allergenText, 120, currentY, 840, 28, 'left');
+
+          // Draw Footer Separator line
+          ctx.strokeStyle = 'rgba(140, 89, 59, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(120, 1680);
+          ctx.lineTo(960, 1680);
+          ctx.stroke();
+
+          // Footer
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#8C593B';
+          ctx.font = "bold 18px sans-serif";
+          ctx.fillText(storeName.toUpperCase(), 540, 1720);
+
+          ctx.fillStyle = '#5C4033';
+          ctx.font = "16px sans-serif";
+          const addressText = settings?.address || 'Main Estate, Cumbum Road, Idukki, Kerala - 685551';
+          ctx.fillText(addressText, 540, 1750);
+
+          const contactText = `Phone: ${settings?.phone || '+91 94471 23456'}  |  Email: ${settings?.email || 'info@hillandvalley.com'}`;
+          ctx.fillText(contactText, 540, 1785);
+
+          ctx.fillStyle = '#8C593B';
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText('ORDER ONLINE: WWW.HILLANDVALLEY.COM', 540, 1825);
 
           const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
           resolve(dataUrl);
         };
 
-        img.onerror = () => {
+        productImg.onload = drawProductImage;
+        productImg.onerror = () => {
+          ctx.fillStyle = '#C5A880';
+          ctx.beginPath();
+          ctx.arc(540, 580, 200, 0, Math.PI * 2);
+          ctx.fill();
           ctx.fillStyle = '#FFFFFF';
           ctx.font = "bold 32px sans-serif";
-          ctx.fillText('[ Image Preview ]', 540, 480);
-          
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = "bold 52px Georgia, serif";
-          ctx.fillText(product.name.toUpperCase(), 540, 770);
-          
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-          resolve(dataUrl);
+          ctx.fillText('[ IMAGE ]', 540, 590);
+          drawProductImage();
         };
       } catch (err) {
         reject(err);
