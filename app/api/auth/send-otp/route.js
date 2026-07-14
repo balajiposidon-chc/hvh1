@@ -22,29 +22,30 @@ export async function POST(request) {
             { upsert: true, new: true }
         );
 
-        const resendApiKey = process.env.RESEND_API_KEY;
-        const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+        const postmarkApiKey = process.env.POSTMARK_API_KEY;
+        const fromEmail = process.env.EMAIL_FROM;
 
         // Check if API key is set and not a placeholder
-        if (!resendApiKey || resendApiKey === 'your_resend_api_key_here' || resendApiKey.startsWith('your_')) {
+        if (!postmarkApiKey || postmarkApiKey === 'your_postmark_api_key_here' || postmarkApiKey.startsWith('your_') || !fromEmail || fromEmail.startsWith('your_')) {
             console.log(`\n======================================================`);
             console.log(`[Email OTP Fallback] OTP for ${email} is: ${code}`);
             console.log(`======================================================\n`);
             return NextResponse.json({ message: 'OTP sent (logged to console)' }, { status: 200 });
         }
 
-        // Send real email using Resend API
-        const resendResponse = await fetch('https://api.resend.com/emails', {
+        // Send real email using Postmark API
+        const postmarkResponse = await fetch('https://api.postmarkapp.com/email', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${resendApiKey}`,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'X-Postmark-Server-Token': postmarkApiKey,
             },
             body: JSON.stringify({
-                from: fromEmail,
-                to: email.toLowerCase(),
-                subject: `${code} is your Hill & Valley verification code`,
-                html: `
+                From: fromEmail,
+                To: email.toLowerCase(),
+                Subject: `${code} is your Hill & Valley verification code`,
+                HtmlBody: `
                     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
                         <h2 style="color: #D2143A; text-align: center;">Hill & Valley Estate Spices</h2>
                         <hr style="border: 0; border-top: 1px solid #eee;" />
@@ -61,11 +62,11 @@ export async function POST(request) {
             }),
         });
 
-        const resendData = await resendResponse.json();
+        const postmarkData = await postmarkResponse.json();
 
-        if (!resendResponse.ok) {
-            console.error('Resend API Error:', resendData);
-            return NextResponse.json({ message: resendData.message || 'Failed to send verification email' }, { status: 500 });
+        if (!postmarkResponse.ok) {
+            console.error('Postmark API Error:', postmarkData);
+            return NextResponse.json({ message: postmarkData.Message || 'Failed to send verification email' }, { status: 500 });
         }
 
         return NextResponse.json({ message: 'OTP verification code sent' }, { status: 200 });
