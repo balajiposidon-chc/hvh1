@@ -20,16 +20,34 @@ export default function RegisterPage() {
     const [showOtpModal, setShowOtpModal] = useState(false);
     const [otpCode, setOtpCode] = useState('');
     const [otpError, setOtpError] = useState('');
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpLoggedToConsole, setOtpLoggedToConsole] = useState(false);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
         setMessage('');
 
         // Frontend validation
+        if (name.trim().length < 2) {
+            setError('Full Name must be at least 2 characters long.');
+            return;
+        }
+
         const nameRegex = /^[a-zA-Z\s\-]+$/;
         if (!nameRegex.test(name.trim())) {
             setError('Full Name can only contain letters, spaces, and hyphens.');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        if (password.length < 8) {
+            setError('Password must have at least 8 characters.');
             return;
         }
 
@@ -39,32 +57,66 @@ export default function RegisterPage() {
             return;
         }
 
-        // Open OTP step modal
-        setShowOtpModal(true);
+        setLoading(true);
+
+        try {
+            // Call API to send OTP to email
+            const response = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await response.json();
+            setLoading(false);
+
+            if (!response.ok) {
+                setError(data.message || 'Failed to send OTP verification email. Please try again.');
+                return;
+            }
+
+            // Check if OTP was logged to console (fallback mode)
+            if (data.message && data.message.includes('logged to console')) {
+                setOtpLoggedToConsole(true);
+            } else {
+                setOtpLoggedToConsole(false);
+            }
+
+            setOtpCode('');
+            setOtpError('');
+            setShowOtpModal(true);
+        } catch (err) {
+            console.error("Error sending OTP", err);
+            setError('Failed to send verification code. Please check your internet connection.');
+            setLoading(false);
+        }
     };
 
     const handleVerifyOtpAndRegister = async (e) => {
         e.preventDefault();
-        if (otpCode !== '123456') {
-            setOtpError('Invalid OTP code. For testing, please use 123456.');
+        
+        if (otpCode.length !== 6) {
+            setOtpError('Please enter a valid 6-digit OTP code.');
             return;
         }
+
         setOtpError('');
-        setShowOtpModal(false);
-        setLoading(true);
+        setOtpLoading(true);
 
         try {
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, phone, address }),
+                body: JSON.stringify({ name, email, password, phone, address, otp: otpCode }),
             });
             const data = await response.json();
-            setLoading(false);
+            setOtpLoading(false);
+
             if (!response.ok) {
-                setError(data.message || 'Unable to register');
+                setOtpError(data.message || 'Registration failed');
                 return;
             }
+
+            setShowOtpModal(false);
             setMessage('Account created successfully. You may now log in.');
             // Reset fields
             setName('');
@@ -72,10 +124,11 @@ export default function RegisterPage() {
             setPassword('');
             setPhone('');
             setAddress('');
+            setOtpCode('');
         } catch (err) {
             console.error("Registration error", err);
-            setError('Registration failed. Please check your details.');
-            setLoading(false);
+            setOtpError('Registration failed. Please check your connection.');
+            setOtpLoading(false);
         }
     };
 
@@ -253,6 +306,7 @@ export default function RegisterPage() {
               <button 
                 type="button" 
                 onClick={() => setShowOtpModal(false)}
+                disabled={otpLoading}
                 className="btn-close position-absolute top-0 end-0 m-3 border-0 bg-transparent"
                 style={{ fontSize: '1.25rem' }}
               >
@@ -265,7 +319,7 @@ export default function RegisterPage() {
               
               <h4 className="text-xl font-extrabold text-neutral-950 mb-2">OTP Verification</h4>
               <p className="text-neutral-500 text-sm mb-4">
-                We've sent a 6-digit confirmation code to your phone. Please enter it below.
+                We've sent a 6-digit verification code to <strong className="text-dark">{email}</strong>. Please enter it below.
               </p>
               
               <form onSubmit={handleVerifyOtpAndRegister} className="space-y-4">
@@ -278,10 +332,17 @@ export default function RegisterPage() {
                     className="form-control text-center rounded-pill py-2.5 bg-light border-0 fw-bold tracking-wider fs-5"
                     style={{ outline: 'none' }}
                     required
+                    disabled={otpLoading}
                   />
-                  <div className="text-muted small mt-2">
-                    🔒 Mock verification code: <strong className="text-dark">123456</strong>
-                  </div>
+                  {otpLoggedToConsole ? (
+                    <div className="alert alert-warning py-2 px-3 rounded-3 small border-0 mt-2 text-start" style={{ backgroundColor: '#FFFDF0', color: '#856404', fontSize: '0.8rem' }}>
+                      🔑 <strong>No Resend API Key:</strong> Check the server/terminal console logs to get your OTP.
+                    </div>
+                  ) : (
+                    <div className="text-muted small mt-2" style={{ fontSize: '0.8rem' }}>
+                      Check your inbox (and spam folder) for the verification code.
+                    </div>
+                  )}
                 </div>
 
                 {otpError && (
@@ -292,9 +353,15 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
+                  disabled={otpLoading}
                   className="w-100 py-3 bg-cherry hover:bg-cherry-dark text-white font-bold rounded-pill transition-all shadow-lg border-0 cursor-pointer text-sm"
                 >
-                  Verify & Register
+                  {otpLoading ? (
+                    <span className="d-flex align-items-center justify-content-center gap-2">
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Registering...
+                    </span>
+                  ) : 'Verify & Register'}
                 </button>
               </form>
             </div>

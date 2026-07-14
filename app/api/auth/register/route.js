@@ -2,12 +2,21 @@ import { NextResponse } from 'next/server';
 import bcryptjs from 'bcryptjs';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import OTP from '@/lib/models/OTP';
 import { registerSchema } from '@/lib/validators';
+
 export async function POST(request) {
     try {
         const body = await request.json();
         const parsed = registerSchema.parse(body);
         await connectToDatabase();
+
+        // Verify OTP code
+        const activeOtp = await OTP.findOne({ email: parsed.email.toLowerCase() });
+        if (!activeOtp || activeOtp.code !== parsed.otp) {
+            return NextResponse.json({ message: 'Invalid or expired OTP code' }, { status: 400 });
+        }
+
         const existing = await User.findOne({ email: parsed.email.toLowerCase() });
         if (existing) {
             return NextResponse.json({ message: 'Email is already registered' }, { status: 400 });
@@ -46,6 +55,9 @@ export async function POST(request) {
                 parsedAddress.city = parts[1];
             }
         }
+
+        // Delete the verified OTP record to prevent reuse
+        await OTP.deleteOne({ _id: activeOtp._id });
 
         const hashed = await bcryptjs.hash(parsed.password, 10);
         const user = new User({
