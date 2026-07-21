@@ -336,7 +336,7 @@ export default function RegisterPage() {
                   />
                   {otpLoggedToConsole ? (
                     <div className="alert alert-warning py-2 px-3 rounded-3 small border-0 mt-2 text-start" style={{ backgroundColor: '#FFFDF0', color: '#856404', fontSize: '0.8rem' }}>
-                      🔑 <strong>No Resend API Key:</strong> Check the server/terminal console logs to get your OTP.
+                      🔑 <strong>SMTP Credentials not Configured:</strong> Check your Vercel Environment Variables, or retrieve your OTP from the Vercel logs.
                     </div>
                   ) : (
                     <div className="text-muted small mt-2" style={{ fontSize: '0.8rem' }}>
